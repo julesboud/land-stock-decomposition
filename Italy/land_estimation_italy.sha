@@ -1,0 +1,147 @@
+
+
+**********************************************************************
+******************************* Italy *******************************
+**********************************************************************
+*This Shazam file estimates land underlying dwellings from 1965 to 2017.
+
+*V indicates a value series in local currency;
+*Q indicates a constant prices series, which we interpret as a quantity series.
+*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-period market
+*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+*There are 53 years covering 1965 to 2017.
+SMPL 1 53
+TIME 1965 1 YEAR
+
+SMPL 1965.0 2017.0
+GENR CON = 0
+GENR CHECK=0
+GENR T=TIME(-1)
+GENR T2=T*T
+
+
+*Initialize variables
+SMPL 1965.0 2017.0
+GENR PDWEL=0
+GENR VDWEL=0
+GENR VSDWEL=0
+GENR QSDWEL=0
+GENR PSDWEL=0
+
+*Now enter the available data series. See the accompanying Excel files for details on the data.
+
+*We use real estate data from 2 different data sets: Brandolini (2004) for 1965-2002 Bank of Italy data for 2002-2017. 
+*I will read in all the variables from both datasets and then merge them.
+*First, splice the two series we have for the current price value of residential real estate, VDWEL.
+*Note that this is only for dwellings owned by households (see Excel file for details).
+SMPL 2002.0 2017.0
+READ VDWEL / BYVAR
+3218.2	3522.5	3857.9	4223.9	4714.294	5081.683	5374.851	5455.238	5569.731	5687.987	5627.089	5510.572	5418.614	
+5333.634	5278.902	5246.608
+*Splice in the series from Brandolini (2004)
+SMPL 1965.0 2002.0
+READ VDWEL1 / BYVAR
+28.2	31.3	34.7	39.6	44.3	50.1	55.4	65.8	78.30	144.20	154.80	204.90	226.30	260.40	332.30	472.30	619.40	727.20	
+806.30	829.30	844.90	909.80	963.30	1117.40	1435.20	1921.10	2177.20	2692.90	2770.90	2655.60	2766.90	2826.20	2930.90	2906.60	
+2929.10	3160.00	3458.80	3919.90
+GENR VDWEL = VDWEL1*(VDWEL(38)/VDWEL1(38))
+
+*Now read in our value and volume series for dwellings structures.
+*To be consistent with the residential real estate series VDWEL, we need to have a series VSDWEL that only measures residential structures owned by households.
+*This is only available in Italy's balance sheet. But we dont have a quantity measure. So we need to get an implicit deflator from the series for all dwellings, as found in the fixed assets by industry dataset.
+*Read in VSDWEL (structures owned by households) for 1995-2017.
+SMPL 1995.0 2017.0
+READ VSDWEL / BYVAR 
+1178.7779	1232.9573	1287.9176	1331.2188	1368.921	1440.218	1491.1019	1566.7684	1629.5736	1718.5928	1828.4189	1912.8977	
+2027.6972	2140.0949	2212.9038	2294.2483	2408.5062	2468.2254	2494.0818	2510.4193	2536.8325	2553.4046	2572.4304
+*Get the deflator PSDWEL using the series for all dwellings.
+READ VSDWELA / BYVAR
+1319.1339	1378.6439	1439.1244	1486.8227	1528.6543	1606.8225	1662.0194	1746.2562	1817.4501	1918.6861	2041.0253	2135.7401	
+2263.7746	2386.5966	2460.3186	2542.9572	2657.6988	2718.9488	2741.0958	2754.9153	2778.547	2788.19	2802.5058
+READ QSDWELA / BYVAR
+2017.1027	2048.0688	2076.8354	2104.6460	2133.2565	2164.7626	2196.8806	2230.6205	2266.5152	2304.1756	2345.7593	2390.8454	
+2436.2210	2478.8014	2511.3514	2542.9572	2567.5668	2585.2831	2598.8759	2606.7851	2613.2268	2619.9567	2632.2009
+GENR PSDWEL = VSDWELA/QSDWELA
+*USing that deflator, we can get a volume series QSDWEL for dwellings owned by households.
+GENR QSDWEL = VSDWEL/PSDWEL
+
+*We will extend both series by splicing in value and volume series for all dwellings (not only those by households).
+*This makes sense if we assume that the non-household dwellings are a fixed proportion of total dwellings. This seems to make sense for the overlap (1995-2017). 
+*Also non-household dwellings represent a small proportion of the total.
+*First extend the value series VSDWEL.
+*VSWDEL1 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.2) - editions from October 2011 to March 2014.
+SMPL 1990.0 1995.0
+READ VSDWEL1 / BYVAR
+994.8851	1096.8965	1176.4226	1230.9186	1298.4665	1351.7004
+GENR VSDWEL = VSDWEL1*(VSDWEL(31)/VSDWEL1(31))
+*VSWDEL2 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.1.1) - editions prior to 2011.
+SMPL 1980.0 1990.0
+READ VSDWEL2 / BYVAR
+304.4431	391.4116	464.7842	537.3705	599.8323	667.8613	706.2036	751.7480	818.2223	882.6504	989.7191
+GENR VSDWEL = VSDWEL2*(VSDWEL(26)/VSDWEL2(26))
+*VSWDEL3 is from Pagliano & Rossi (1992), Table 21.
+SMPL 1965.0 1980.0
+READ VSDWEL3 / BYVAR
+29.6575	34.4151	36.7340	43.1918	53.8912	52.2210	56.3114	69.1587	105.7528	131.0690	166.3358	205.2410	230.8030	275.4089	351.4427	472.0065
+GENR VSDWEL = VSDWEL3*(VSDWEL(16)/VSDWEL3(16))
+
+*Do the same with the volume series QSDWEL.
+*QSWDEL1 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.2) - editions from October 2011 to March 2014.
+SMPL 1990.0 1995.0
+READ QSDWEL1 / BYVAR
+1644.9258	1677.5372	1709.4335	1740.2536	1769.5612	1798.5052
+GENR QSDWEL = QSDWEL1*(QSDWEL(31)/QSDWEL1(31))
+*QSWDEL2 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.1.1) - editions prior to 2011.
+SMPL 1980.0 1990.0
+READ QSDWEL2 / BYVAR
+1134.0452	1163.9635	1191.0883	1219.3250	1247.2994	1274.0188	1298.2304	1321.3731	1345.7296	1370.0892	1396.9461
+GENR QSDWEL = QSDWEL2*(QSDWEL(26)/QSDWEL2(26))
+*For 1965-1980, we need to deflate the Pagliano & Rossi (1992) series by the capital deflator in Table 9.
+*We do not get a smooth series for QS using the deflator, so we fit a quadratic. Looks good with the official series.
+SMPL 1965.0 1980.0
+READ PSDWEL3 / BYVAR
+0.0750	0.0760	0.0780	0.0820	0.0880	0.1020	0.1060	0.1100	0.1370	0.1760	0.2090	0.2520	0.2990	0.3470	0.4090	0.5080
+GENR QSDWEL3 = VSDWEL3/PSDWEL3
+OLS QSDWEL3 T T2 / PREDICT=QSDWEL3L
+GENR QSDWEL = QSDWEL3L*(QSDWEL(16)/QSDWEL3L(16))
+
+*Generate implicit prices.
+SMPL 1965.0 2017.0
+GENR PSDWEL = VSDWEL/QSDWEL
+
+*Read in the BIS residential price index
+SMPL 1965.0 2017.0
+READ PDWEL / BYVAR
+1.95	1.97	2.08	2.21	2.32	2.45	2.57	2.77	3.79	5.49	6.14	7.22	7.75	9.40	10.98	
+15.91	19.48	21.45	22.64	23.01	23.51	24.24	26.17	30.30	35.97	41.83	47.45	54.18	55.16	54.39	
+55.84	57.93	59.27	59.23	60.12	63.05	67.73	74.56	79.19	85.04	90.80	95.89	100.14	100.67	
+100.41	100.68	101.19	96.19	90.69	86.28	84.50	84.67	83.66
+GENR QDWEL = VDWEL/PDWEL
+
+*Scale all prices to 1 in 1965.
+SMPL 1965.0 2017.0
+GENR CON=PDWEL(1)
+GENR PDWEL=PDWEL/CON
+GENR QDWEL=QDWEL*CON
+GENR CON=PSDWEL(1)
+GENR PSDWEL=PSDWEL/CON
+GENR QSDWEL=QSDWEL*CON
+GENR VLDWEL = VDWEl-VSDWEL
+*Get PLBUILD and QLBUILD from following Fischer index.
+SMPL 1965.0 2017.0
+GENR QSDWEL=-QSDWEL
+INDEX PDWEL QDWEL PSDWEL QSDWEL / CHAIN FISHER=PLDWEL QFISHER=QLDWEL
+GENR QSDWEL=-QSDWEL
+GENR VLDWEL=QLDWEL*PLDWEL
+
+GRAPH(VLDWEL,VDWEL,VSDWEL,YEAR)
+GRAPH(QLDWEL,QDWEL,QSDWEL,YEAR)
+*Weird observation in 1973 (value seems to not increase enough relative to price). Apart from that looks pretty good.
+*Could not find agricultural land data for before 1995.
+
+PRINT YEAR VLDWEL QLDWEL PLDWEL
+
+STOP
+

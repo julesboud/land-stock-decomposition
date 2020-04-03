@@ -1,0 +1,572 @@
+ Welcome to SHAZAM (Double Precision) v11.1 -  APR 2015 WIN-NT   PAR=112400
+ ...NOTE..CURRENT WORKING DIRECTORY IS: C:\Users\jules\Desktop\Diewert RA\Japan
+
+
+
+ |_**********************************************************************
+ |_******************************* Japan ********************************
+ |_**********************************************************************
+ |_*This Shazam file estimates land underlying dwellings and agricultural land from 1969 to 2014.
+
+ |_*V indicates a value series in local currency (billion yens).
+ |_*Q indicates a constant prices series, which we interpret as a quantity series.
+ |_*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+ |_*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-perio
+ | d market
+ |_*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+ |_*There are 46 years covering 1969 to 2014.
+ |_SMPL 1 46
+
+ |_TIME 1969 1 YEAR
+  VARIABLE YEAR     CREATED WITH    46 OBSERVATIONS
+
+
+ |_SMPL 1969.0 2014.0
+
+ |_GENR CON = 0
+
+ |_GENR CHECK=0
+
+
+ |_*Initialize variables
+ |_SMPL 1969.0 2014.0
+
+ |_GENR PDWEL=0
+
+ |_GENR VDWEL=0
+
+
+ |_GENR VSDWEL=0
+
+ |_GENR VSDWELH=0
+
+ |_GENR QSDWEL=0
+
+
+ |_GENR VLAGRIP=0
+
+ |_GENR QLAGRIP=0
+
+ |_GENR PLAGRIP=0
+
+
+ |_*Now enter the available data series. See the accompanying Excel files for details on the data.
+ |_*Each of our data series from the Cabinet Office are split into subsamples from different benchmark years. So we need to splice
+ |  them.
+
+ |_*Our land underlying buildings series owned by households VLBUILDH is mostly composed of land underlying dwellings, so we will
+ | interpret it as such (a&
+ |_*ssumption). See article appendix for details.
+ |_*Unfortunately, land underlying buildings owned by households stopped being published after 2014 National Accounts. So we stop
+ | our estimation at 2014.&
+ |_*
+ |_*To match that in our decomposition we need a measure of dwellings stock owned by household (VSDWELH). For 1994-2014, we have t
+ | hat from the 2018 Natio&
+ |_*nal Accounts (Cabinet Office website).
+ |_SMPL 1994.0 2014.0
+
+ |_READ VSDWELH / BYVAR
+ ...NOTE..    1 VARIABLES AND       21 OBSERVATIONS STARTING AT OBS      26
+
+
+ |_*Before 1994, Japan's official National Accounts don't separate dwellings owned by households from overall dwellings. But the N
+ | ational Accounts publis&
+ |_*hed on the OECD website do so back to 1980.
+ |_SMPL 1980.0 1993.0
+
+ |_READ VSDWELH / BYVAR
+ ...NOTE..    1 VARIABLES AND       14 OBSERVATIONS STARTING AT OBS      12
+
+
+ |_*Before 1980, we only have a series for overall dwellings from the 1998 National Accounts, so we use that to splice the househo
+ | ld-owned dwellings back&
+ |_* to 1969 (see article appendix for details).
+ |_SMPL 1969.0 1980.0
+
+ |_READ VSDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       12 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR VSDWELH = VSDWEL*(VSDWELH(12)/VSDWEL(12))
+
+
+ |_*Now we need a volume series for net dwellings owned by households QSDWLH. The 2018 National Accounts (Cabinet Office website)
+ | give us exactly that fo&
+ |_*r 1994-2014.
+ |_SMPL 1994.0 2014.0
+
+ |_READ QSDWELH / BYVAR
+ ...NOTE..    1 VARIABLES AND       21 OBSERVATIONS STARTING AT OBS      26
+
+
+ |_*Before 1994, I can only find volume measures for overall dwellings. Assuming that the price path of dwellings owned by househo
+ | lds and overall dwellin&
+ |_*gs follow the same path, I can splice
+ |_*the volume of the former with the volume of the latter. First use data from OECD for 1980-2013, and then from the 1998 Nationa
+ | l Accounts (Cabinet Off&
+ |_*ice) for 1969-1980.
+ |_SMPL 1980.0 1994.0
+
+ |_READ QSDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       15 OBSERVATIONS STARTING AT OBS      12
+
+
+ |_GENR QSDWELH = QSDWEL*(QSDWELH(26)/QSDWEL(26))
+
+ |_SMPL 1969.0 1980.0
+
+ |_READ QSDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       12 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR QSDWELH = QSDWEL*(QSDWELH(12)/QSDWEL(12))
+
+
+ |_*We now the land underlying buildings series owned by households VLBUILDH introduced above.
+ |_*We have data for 1969-1994 from the 1998 National Accounts (benchmark=1990) and 1994-2014 from the 2014 National Accounts (ben
+ | chmark=2005).
+ |_*We splice the latter with the former to account for the slight discrepancy in the common year.
+ |_SMPL 1994.0 2014.0
+
+ |_READ VLBUILDH / BYVAR
+ ...NOTE..    1 VARIABLES AND       21 OBSERVATIONS STARTING AT OBS      26
+
+
+ |_SMPL 1969.0 1994.0
+
+ |_READ VLBUILD1 / BYVAR
+ ...NOTE..    1 VARIABLES AND       26 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR VLBUILDH = VLBUILD1*(VLBUILDH(26)/VLBUILD1(26))
+
+ |_*As explained in the article's appendix, we interpret VLBUILDH as VLDWELH.
+ |_SMPL 1969.0 2014.0
+
+ |_GENR VLDWELH = VLBUILDH
+
+
+ |_*The last ingredient need to decompose land underlying dwellings into price/volume components is a housing price index. We read
+ |  in the PI from BIS.
+ |_*We make the assumption that PDWEL=PDWELH (see article's appendix).
+ |_SMPL 1969.0 2014.0
+
+ |_READ PDWELH / BYVAR
+ ...NOTE..    1 VARIABLES AND       46 OBSERVATIONS STARTING AT OBS       1
+
+
+
+ |_*Now generate the implicit prices that correspond to the above data.
+ |_SMPL 1969.0 2014.0
+
+ |_GENR PSDWELH=VSDWELH/QSDWELH
+
+ |_*Now rescale prices to be 1 in 1969.
+ |_GENR CON=PDWELH(1)
+
+ |_GENR PDWELH=PDWELH/CON
+
+ |_GENR CON=PSDWELH(1)
+
+ |_GENR PSDWELH=PSDWELH/CON
+
+ |_GENR QSDWELH=QSDWELH*CON
+
+
+ |_*We can now get a measure for overall Q, since VLDWELH = PDWELH*QDWELH - PSDWELH*QDWELH.
+ |_GENR VDWELH = VSDWELH+VLDWELH
+
+ |_GENR QDWELH = VDWELH/PDWELH
+
+
+ |_*Get PLDWELH and QLDWELH from following Fischer index.
+ |_GENR QSDWELH=-QSDWELH
+
+ |_INDEX PDWELH QDWELH PSDWELH QSDWELH / CHAIN FISHER=PLDWELH QFISHER=QLDWELH
+
+ REQUIRED MEMORY IS PAR=      12 CURRENT PAR=  112400
+ BASE PERIOD IS OBSERVATION     1
+ ALL INDEXES ARE CHAINED
+ FISHER   WILL BE STORED AS VARIABLE: PLDWELH
+ QFISHER  WILL BE STORED AS VARIABLE: QLDWELH
+                     PRICE INDEX                          QUANTITY
+     DIVISIA PAASCHE LASPEYRES FISHER  DIVISIA    PAASCHE  LASPEYRES    FISHER
+   1  1.000  1.000  1.000  1.000  0.6304E+05  0.6304E+05  0.6304E+05  0.6304E+05
+   2  1.230  1.234  1.226  1.230  0.6350E+05  0.6329E+05  0.6368E+05  0.6349E+05
+   3  1.462  1.471  1.454  1.462  0.6418E+05  0.6381E+05  0.6452E+05  0.6416E+05
+   4  1.782  1.793  1.773  1.783  0.7315E+05  0.7273E+05  0.7352E+05  0.7313E+05
+   5  2.407  2.427  2.389  2.408  0.7030E+05  0.6970E+05  0.7082E+05  0.7026E+05
+   6  2.429  2.447  2.414  2.431  0.6854E+05  0.6804E+05  0.6898E+05  0.6851E+05
+   7  2.339  2.357  2.324  2.340  0.7530E+05  0.7475E+05  0.7578E+05  0.7526E+05
+   8  2.349  2.366  2.335  2.351  0.7999E+05  0.7942E+05  0.8046E+05  0.7994E+05
+   9  2.482  2.500  2.467  2.484  0.8200E+05  0.8140E+05  0.8250E+05  0.8195E+05
+  10  2.679  2.699  2.663  2.681  0.8825E+05  0.8760E+05  0.8879E+05  0.8819E+05
+  11  2.955  2.978  2.937  2.957  0.9815E+05  0.9741E+05  0.9878E+05  0.9809E+05
+  12  3.453  3.480  3.430  3.455  0.1011E+06  0.1003E+06  0.1018E+06  0.1010E+06
+  13  3.908  3.939  3.882  3.910  0.1036E+06  0.1028E+06  0.1043E+06  0.1036E+06
+  14  4.229  4.263  4.199  4.231  0.1032E+06  0.1024E+06  0.1039E+06  0.1032E+06
+  15  4.474  4.511  4.441  4.476  0.1017E+06  0.1008E+06  0.1024E+06  0.1016E+06
+  16  4.621  4.661  4.587  4.624  0.1033E+06  0.1024E+06  0.1040E+06  0.1032E+06
+  17  4.758  4.798  4.723  4.760  0.1089E+06  0.1080E+06  0.1097E+06  0.1088E+06
+  18  4.997  5.033  4.967  5.000  0.1327E+06  0.1318E+06  0.1335E+06  0.1327E+06
+  19  5.511  5.545  5.483  5.514  0.1610E+06  0.1600E+06  0.1618E+06  0.1609E+06
+  20  5.822  5.857  5.792  5.824  0.1677E+06  0.1667E+06  0.1686E+06  0.1676E+06
+  21  6.479  6.518  6.445  6.482  0.1751E+06  0.1741E+06  0.1761E+06  0.1751E+06
+  22  7.381  7.431  7.339  7.385  0.1670E+06  0.1659E+06  0.1680E+06  0.1669E+06
+  23  7.343  7.391  7.302  7.346  0.1536E+06  0.1526E+06  0.1545E+06  0.1536E+06
+  24  6.890  6.932  6.856  6.894  0.1459E+06  0.1451E+06  0.1467E+06  0.1459E+06
+  25  6.551  6.590  6.520  6.555  0.1471E+06  0.1462E+06  0.1478E+06  0.1470E+06
+  26  6.379  6.416  6.348  6.382  0.1479E+06  0.1471E+06  0.1486E+06  0.1479E+06
+  27  6.258  6.294  6.229  6.261  0.1439E+06  0.1431E+06  0.1446E+06  0.1438E+06
+  28  6.077  6.111  6.049  6.080  0.1456E+06  0.1448E+06  0.1463E+06  0.1456E+06
+  29  5.985  6.019  5.958  5.989  0.1473E+06  0.1465E+06  0.1480E+06  0.1472E+06
+  30  5.847  5.880  5.820  5.850  0.1476E+06  0.1468E+06  0.1483E+06  0.1475E+06
+  31  5.591  5.623  5.566  5.594  0.1507E+06  0.1499E+06  0.1514E+06  0.1506E+06
+  32  5.286  5.315  5.262  5.288  0.1516E+06  0.1507E+06  0.1523E+06  0.1515E+06
+  33  4.970  4.997  4.947  4.972  0.1522E+06  0.1513E+06  0.1529E+06  0.1521E+06
+  34  4.595  4.621  4.574  4.598  0.1547E+06  0.1538E+06  0.1554E+06  0.1546E+06
+  35  4.165  4.191  4.144  4.167  0.1606E+06  0.1596E+06  0.1614E+06  0.1605E+06
+  36  3.804  3.830  3.782  3.806  0.1673E+06  0.1661E+06  0.1682E+06  0.1672E+06
+  37  3.560  3.586  3.538  3.562  0.1751E+06  0.1738E+06  0.1762E+06  0.1750E+06
+  38  3.412  3.439  3.388  3.414  0.1870E+06  0.1855E+06  0.1883E+06  0.1869E+06
+  39  3.350  3.378  3.326  3.352  0.1965E+06  0.1949E+06  0.1979E+06  0.1964E+06
+  40  3.200  3.227  3.176  3.202  0.1991E+06  0.1974E+06  0.2006E+06  0.1990E+06
+  41  3.115  3.141  3.092  3.116  0.1963E+06  0.1947E+06  0.1978E+06  0.1962E+06
+  42  3.200  3.228  3.176  3.202  0.1868E+06  0.1852E+06  0.1882E+06  0.1867E+06
+  43  3.151  3.178  3.128  3.153  0.1843E+06  0.1827E+06  0.1857E+06  0.1842E+06
+  44  3.143  3.170  3.119  3.145  0.1823E+06  0.1807E+06  0.1836E+06  0.1822E+06
+  45  3.218  3.246  3.194  3.220  0.1773E+06  0.1758E+06  0.1786E+06  0.1772E+06
+  46  3.197  3.225  3.173  3.199  0.1775E+06  0.1760E+06  0.1788E+06  0.1774E+06
+
+ |_GENR QSDWELH=-QSDWELH
+
+
+ |_*Now all we have to do is adjust our estimated land numbers for the housing owned by the rest of the (non-household) private se
+ | ctor.
+ |_*We use dwellings ownership ratio for that (see article's appendix).
+ |_*First read in the value of dwellings owned by households. As for dwellings owned by households, we retropolate the series from
+ |  the 2018 National Acco&
+ |_*unts back to 1980 by splicing
+ |_*in the OECD series.
+ |_SMPL 1994.0 2014.0
+
+ |_READ VSDWELC / BYVAR
+ ...NOTE..    1 VARIABLES AND       21 OBSERVATIONS STARTING AT OBS      26
+
+
+ |_SMPL 1980.0 1994.0
+
+ |_READ VSDWEL1 / BYVAR
+ ...NOTE..    1 VARIABLES AND       15 OBSERVATIONS STARTING AT OBS      12
+
+
+ |_GENR VSDWELC = VSDWEL1*(VSDWELC(26)/VSDWEL1(26))
+
+
+ |_*We don't have ownership data before 1980, so we will compute the NFC ownership ratio for 1980-2014, and assume that the pre-19
+ | 80 ratio is constant at&
+ |_* the 1980 level.
+ |_SMPL 1980.0 2014.0
+
+ |_GENR VSDWELCR = VSDWELC/VSDWELH
+
+ |_SMPL 1969.0 1979.0
+
+ |_GENR VSDWELCR = VSDWELCR(12)
+
+
+ |_*Now we can multiply our volumes (and adjust our values) by (1+VSDWELCR) to change from stocks owned by households to stocks ow
+ | ned by the private sect&
+ |_*or.
+ |_SMPL 1969.0 2014.0
+
+ |_GENR QDWELP=QDWELH*(1+VSDWELCR)
+
+ |_GENR QSDWELP=QSDWELH*(1+VSDWELCR)
+
+ |_GENR QLDWELP=QLDWELH*(1+VSDWELCR)
+
+ |_GENR PDWELP = PDWELH
+
+ |_GENR PSDWELP = PSDWELH
+
+ |_GENR PLDWELP = PLDWELH
+
+ |_GENR VDWELP=QDWELP*PDWELP
+
+ |_GENR VSDWELP=QSDWELP*PSDWELP
+
+ |_GENR VLDWELP=QLDWELP*PLDWELP
+
+
+ |_*We now turn to agricultural land.
+ |_*First read in the land under cultivation owned by the private sector value VLAGRIP from the Japanese Accounts.
+ |_*We splice the series from the 2014 National Accounts (benchmark=2011) with the series from the 1998 National Accounts (benchma
+ | rk=1990).
+ |_SMPL 1994.0 2014.0
+
+ |_READ VLAGRIP / BYVAR
+ ...NOTE..    1 VARIABLES AND       21 OBSERVATIONS STARTING AT OBS      26
+
+
+ |_SMPL 1969.0 1994.0
+
+ |_READ VLAGRIP1 / BYVAR
+ ...NOTE..    1 VARIABLES AND       26 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR VLAGRIP = VLAGRIP1*(VLAGRIP(26)/VLAGRIP1(26))
+
+
+ |_*Divide it by the OECD's measure of the agricultural area in Japan to get an implicit price.
+ |_SMPL 1969.0 2014.0
+
+ |_READ QLAGRI / BYVAR
+ ...NOTE..    1 VARIABLES AND       46 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_*Because we want to measure volume/price up to a normalizing factor, we can simply assume that the quantity of overall agricutu
+ | ral land = the quantity&
+ |_* of agri land owned by the private sector.
+
+ |_GENR PLAGRIP = VLAGRIP/QLAGRI
+
+ |_*Now rescale prices to be 1 in 1969.
+ |_GENR CON=PLAGRIP(1)
+
+ |_GENR PLAGRIP=PLAGRIP/CON
+
+ |_GENR QLAGRIP=QLAGRI*CON
+
+
+ |_*Aggregate land underlying dwellings and land under cultivation into total land using a Fisher index.
+ |_INDEX PLAGRIP QLAGRIP PLDWELP QLDWELP / CHAIN FISHER=PL QFISHER=QL
+
+ REQUIRED MEMORY IS PAR=      17 CURRENT PAR=  112400
+ BASE PERIOD IS OBSERVATION     1
+ ALL INDEXES ARE CHAINED
+ FISHER   WILL BE STORED AS VARIABLE: PL
+ QFISHER  WILL BE STORED AS VARIABLE: QL
+                     PRICE INDEX                          QUANTITY
+     DIVISIA PAASCHE LASPEYRES FISHER  DIVISIA    PAASCHE  LASPEYRES    FISHER
+   1  1.000  1.000  1.000  1.000  0.9736E+05  0.9736E+05  0.9736E+05  0.9736E+05
+   2  1.224  1.224  1.224  1.224  0.9792E+05  0.9792E+05  0.9792E+05  0.9792E+05
+   3  1.472  1.472  1.472  1.472  0.9870E+05  0.9871E+05  0.9870E+05  0.9870E+05
+   4  1.881  1.877  1.886  1.882  0.1089E+06  0.1092E+06  0.1087E+06  0.1089E+06
+   5  2.473  2.466  2.479  2.473  0.1056E+06  0.1059E+06  0.1053E+06  0.1056E+06
+   6  2.486  2.479  2.493  2.486  0.1035E+06  0.1038E+06  0.1033E+06  0.1035E+06
+   7  2.444  2.436  2.453  2.444  0.1109E+06  0.1113E+06  0.1105E+06  0.1109E+06
+   8  2.479  2.470  2.488  2.479  0.1160E+06  0.1164E+06  0.1155E+06  0.1160E+06
+   9  2.643  2.633  2.654  2.643  0.1175E+06  0.1180E+06  0.1170E+06  0.1175E+06
+  10  2.856  2.844  2.867  2.856  0.1246E+06  0.1251E+06  0.1241E+06  0.1246E+06
+  11  3.176  3.163  3.190  3.176  0.1351E+06  0.1357E+06  0.1345E+06  0.1351E+06
+  12  3.689  3.673  3.705  3.689  0.1381E+06  0.1386E+06  0.1375E+06  0.1381E+06
+  13  4.155  4.138  4.173  4.155  0.1405E+06  0.1411E+06  0.1399E+06  0.1405E+06
+  14  4.464  4.445  4.483  4.464  0.1396E+06  0.1402E+06  0.1390E+06  0.1396E+06
+  15  4.693  4.673  4.713  4.693  0.1376E+06  0.1382E+06  0.1371E+06  0.1376E+06
+  16  4.847  4.827  4.868  4.847  0.1393E+06  0.1398E+06  0.1387E+06  0.1392E+06
+  17  5.000  4.979  5.022  5.000  0.1454E+06  0.1460E+06  0.1447E+06  0.1454E+06
+  18  5.308  5.281  5.336  5.309  0.1715E+06  0.1724E+06  0.1706E+06  0.1715E+06
+  19  5.932  5.895  5.970  5.933  0.2021E+06  0.2034E+06  0.2008E+06  0.2021E+06
+  20  6.260  6.222  6.300  6.261  0.2097E+06  0.2110E+06  0.2083E+06  0.2097E+06
+  21  6.953  6.911  6.998  6.954  0.2181E+06  0.2194E+06  0.2167E+06  0.2181E+06
+  22  7.853  7.804  7.904  7.854  0.2103E+06  0.2116E+06  0.2090E+06  0.2103E+06
+  23  7.740  7.690  7.793  7.741  0.1964E+06  0.1977E+06  0.1950E+06  0.1963E+06
+  24  7.185  7.137  7.236  7.186  0.1876E+06  0.1889E+06  0.1863E+06  0.1876E+06
+  25  6.803  6.757  6.851  6.804  0.1885E+06  0.1898E+06  0.1872E+06  0.1885E+06
+  26  6.590  6.545  6.636  6.591  0.1887E+06  0.1900E+06  0.1874E+06  0.1887E+06
+  27  6.448  6.404  6.493  6.448  0.1836E+06  0.1849E+06  0.1823E+06  0.1836E+06
+  28  6.266  6.223  6.310  6.266  0.1849E+06  0.1862E+06  0.1836E+06  0.1849E+06
+  29  6.158  6.116  6.201  6.158  0.1864E+06  0.1877E+06  0.1851E+06  0.1864E+06
+  30  5.997  5.957  6.040  5.998  0.1864E+06  0.1877E+06  0.1851E+06  0.1864E+06
+  31  5.731  5.693  5.772  5.732  0.1895E+06  0.1908E+06  0.1882E+06  0.1895E+06
+  32  5.418  5.381  5.456  5.419  0.1899E+06  0.1912E+06  0.1886E+06  0.1899E+06
+  33  5.091  5.057  5.127  5.091  0.1901E+06  0.1914E+06  0.1888E+06  0.1901E+06
+  34  4.713  4.681  4.746  4.714  0.1926E+06  0.1939E+06  0.1912E+06  0.1925E+06
+  35  4.289  4.260  4.320  4.290  0.1988E+06  0.2002E+06  0.1974E+06  0.1988E+06
+  36  3.930  3.903  3.958  3.930  0.2061E+06  0.2075E+06  0.2046E+06  0.2060E+06
+  37  3.686  3.660  3.713  3.687  0.2146E+06  0.2161E+06  0.2130E+06  0.2145E+06
+  38  3.537  3.513  3.563  3.538  0.2278E+06  0.2294E+06  0.2261E+06  0.2278E+06
+  39  3.470  3.446  3.496  3.471  0.2384E+06  0.2401E+06  0.2367E+06  0.2383E+06
+  40  3.315  3.292  3.339  3.315  0.2412E+06  0.2429E+06  0.2395E+06  0.2412E+06
+  41  3.220  3.197  3.243  3.220  0.2380E+06  0.2397E+06  0.2363E+06  0.2380E+06
+  42  3.288  3.264  3.312  3.288  0.2270E+06  0.2287E+06  0.2254E+06  0.2270E+06
+  43  3.233  3.210  3.257  3.233  0.2240E+06  0.2256E+06  0.2223E+06  0.2240E+06
+  44  3.216  3.193  3.240  3.216  0.2214E+06  0.2230E+06  0.2198E+06  0.2214E+06
+  45  3.278  3.255  3.303  3.279  0.2156E+06  0.2172E+06  0.2140E+06  0.2156E+06
+  46  3.254  3.231  3.278  3.254  0.2159E+06  0.2175E+06  0.2143E+06  0.2159E+06
+
+ |_GENR VL=PL*QL
+
+
+ |_GRAPH(VDWELP,VSDWELP,VLDWELP,VLAGRIP,YEAR)
+
+ REQUIRED MEMORY IS PAR=      17 CURRENT PAR=  112400
+        46 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+ |_GRAPH(QDWELP,QSDWELP,QLDWELP,QLAGRIP,YEAR)
+
+ REQUIRED MEMORY IS PAR=      17 CURRENT PAR=  112400
+        46 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+ |_GRAPH(PDWELP,PSDWELP,PLDWELP,PLAGRIP,YEAR)
+
+ REQUIRED MEMORY IS PAR=      17 CURRENT PAR=  112400
+        46 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+
+ |_PRINT YEAR VLDWELP QLDWELP PLDWELP
+       YEAR           VLDWELP        QLDWELP        PLDWELP
+    1969.100       73750.71       73750.71       1.000000
+    1970.100       91365.50       74268.60       1.230204
+    1971.100       109764.9       75056.34       1.462434
+    1972.100       152521.2       85542.57       1.782986
+    1973.100       197921.8       82191.33       2.408062
+    1974.100       194793.1       80140.54       2.430644
+    1975.100       206060.6       88043.00       2.340454
+    1976.100       219830.3       93516.03       2.350723
+    1977.100       238080.5       95863.50       2.483537
+    1978.100       276554.7       103170.6       2.680556
+    1979.100       339319.4       114745.2       2.957155
+    1980.100       408321.3       118185.2       3.454926
+    1981.100       472858.5       120934.9       3.910025
+    1982.100       508446.7       120175.9       4.230855
+    1983.100       529569.2       118314.1       4.475959
+    1984.100       555657.6       120171.3       4.623878
+    1985.100       603093.6       126694.4       4.760222
+    1986.100       772152.4       154444.1       4.999560
+    1987.100       1032310.       187231.3       5.513556
+    1988.100       1138311.       195439.5       5.824366
+    1989.100       1325956.       204567.6       6.481750
+    1990.100       1450055.       196356.0       7.384826
+    1991.100       1334447.       181650.1       7.346247
+    1992.100       1189713.       172580.8       6.893656
+    1993.100       1137612.       173553.3       6.554827
+    1994.100       1109391.       173833.4       6.381920
+    1995.100       1056137.       168673.0       6.261448
+    1996.100       1034019.       170069.6       6.079973
+    1997.100       1028711.       171777.9       5.988608
+    1998.100       1005818.       171932.7       5.850066
+    1999.100       980173.6       175210.5       5.594264
+    2000.100       929518.7       175765.0       5.288418
+    2001.100       875848.3       176149.6       4.972185
+    2002.100       821986.2       178788.1       4.597545
+    2003.100       772551.4       185386.1       4.167257
+    2004.100       734692.7       193025.1       3.806203
+    2005.100       719474.3       201997.5       3.561798
+    2006.100       736885.2       215866.8       3.413611
+    2007.100       760810.1       226999.6       3.351592
+    2008.100       736634.5       230084.1       3.201587
+    2009.100       707125.9       226924.7       3.116126
+    2010.100       690724.7       215736.8       3.201701
+    2011.100       670668.0       212708.7       3.152989
+    2012.100       660807.8       210138.5       3.144630
+    2013.100       657695.6       204273.0       3.219690
+    2014.100       654649.7       204640.4       3.199025
+
+ |_PRINT YEAR VLAGRIP QLAGRIP PLAGRIP
+       YEAR           VLAGRIP        QLAGRIP        PLAGRIP
+    1969.100       23607.88       23607.88       1.000000
+    1970.100       28472.67       23647.17       1.204063
+    1971.100       35532.20       23647.17       1.502599
+    1972.100       52408.14       23686.45       2.212579
+    1973.100       63145.70       23584.32       2.677445
+    1974.100       62624.91       23552.89       2.658905
+    1975.100       65117.11       23325.06       2.791723
+    1976.100       67639.23       23164.01       2.920014
+    1977.100       72471.54       22594.43       3.207495
+    1978.100       79182.52       22767.27       3.477910
+    1979.100       89883.54       22551.23       3.985750
+    1980.100       100949.5       22327.32       4.521344
+    1981.100       110804.7       22181.98       4.995256
+    1982.100       114711.6       22056.28       5.200856
+    1983.100       116366.3       21891.30       5.315640
+    1984.100       119282.6       21745.96       5.485274
+    1985.100       123773.1       21663.47       5.713449
+    1986.100       138449.6       21580.98       6.415349
+    1987.100       166606.7       21502.42       7.748278
+    1988.100       174322.4       21451.36       8.126403
+    1989.100       190420.1       21376.72       8.907823
+    1990.100       201508.6       21313.87       9.454341
+    1991.100       185439.1       21254.95       8.724514
+    1992.100       158563.3       21196.03       7.480804
+    1993.100       144819.4       21129.25       6.853977
+    1994.100       134102.2       21046.76       6.371631
+    1995.100       127806.6       20976.06       6.092976
+    1996.100       124480.7       20885.71       5.960089
+    1997.100       119172.4       20736.44       5.747003
+    1998.100       112312.4       20595.03       5.453374
+    1999.100       105870.3       20441.84       5.179100
+    2000.100       99352.00       20288.64       4.896928
+    2001.100       92067.10       20127.59       4.574175
+    2002.100       85545.50       19966.53       4.284444
+    2003.100       80227.10       19789.77       4.053968
+    2004.100       75119.70       19616.93       3.829329
+    2005.100       71432.40       19440.17       3.674474
+    2006.100       68893.20       19267.33       3.575648
+    2007.100       66438.00       19114.14       3.475857
+    2008.100       62989.90       18972.73       3.320024
+    2009.100       59193.40       18827.39       3.144005
+    2010.100       55734.50       18709.54       2.978934
+    2011.100       53498.80       18603.48       2.875741
+    2012.100       51263.50       18517.07       2.768446
+    2013.100       49068.00       18430.65       2.662305
+    2014.100       47853.70       18348.16       2.608093
+
+ |_PRINT YEAR VL QL PL
+       YEAR           VL             QL             PL
+    1969.100       97358.59       97358.59       1.000000
+    1970.100       119838.2       97916.79       1.223878
+    1971.100       145297.1       98703.97       1.472049
+    1972.100       204929.3       108912.6       1.881594
+    1973.100       261067.5       105578.3       2.472738
+    1974.100       257418.0       103543.4       2.486087
+    1975.100       271177.7       110934.7       2.444481
+    1976.100       287469.5       115962.2       2.478993
+    1977.100       310552.1       117496.9       2.643066
+    1978.100       355737.2       124569.4       2.855734
+    1979.100       429203.0       135120.4       3.176448
+    1980.100       509270.8       138055.0       3.688898
+    1981.100       583663.2       140459.9       4.155371
+    1982.100       623158.2       139594.4       4.464064
+    1983.100       645935.4       137634.8       4.693111
+    1984.100       674940.2       139241.7       4.847256
+    1985.100       726866.8       145364.0       5.000323
+    1986.100       910602.0       171530.6       5.308687
+    1987.100       1198917.       202089.5       5.932605
+    1988.100       1312633.       209655.2       6.260916
+    1989.100       1516376.       218059.1       6.953969
+    1990.100       1651563.       210293.8       7.853599
+    1991.100       1519886.       196335.5       7.741268
+    1992.100       1348276.       187619.3       7.186232
+    1993.100       1282432.       188485.9       6.803860
+    1994.100       1243493.       188675.0       6.590662
+    1995.100       1183944.       183603.6       6.448370
+    1996.100       1158499.       184873.5       6.266443
+    1997.100       1147883.       186392.2       6.158427
+    1998.100       1118130.       186412.7       5.998143
+    1999.100       1086044.       189471.8       5.731955
+    2000.100       1028871.       189874.6       5.418686
+    2001.100       967915.4       190104.9       5.091480
+    2002.100       907531.7       192534.5       4.713606
+    2003.100       852778.5       198792.9       4.289784
+    2004.100       809812.4       206036.0       3.930442
+    2005.100       790906.7       214540.3       3.686518
+    2006.100       805778.4       227757.7       3.537876
+    2007.100       827248.1       238349.9       3.470730
+    2008.100       799624.4       241186.9       3.315372
+    2009.100       766319.3       237988.9       3.219979
+    2010.100       746459.2       227018.2       3.288102
+    2011.100       724166.8       223972.3       3.233287
+    2012.100       712071.3       221387.1       3.216408
+    2013.100       706763.6       215567.6       3.278617
+    2014.100       702503.4       215862.0       3.254409
+
+
+
+ |_STOP
+

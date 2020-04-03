@@ -1,0 +1,221 @@
+
+
+**********************************************************************
+******************************* France *******************************
+**********************************************************************
+*This Shazam file estimates land underlying dwellings and agricultural land from 1970 to 2018.
+
+*V indicates a value series in local currency;
+*Q indicates a constant prices series, which we interpret as a quantity series. Except when noted, the base year for the constant price series 
+*is 2014.
+*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-period market
+*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+*There are 49 years covering 1970 to 2018.
+SMPL 1 49
+TIME 1970 1 YEAR
+
+SMPL 1970.0 2018.0
+GENR CON = 0
+GENR CHECK=0
+
+*Official balance sheet land data starts in 1978. We will first estimate for 1978-2018 for land underlying dwellings and agricultural land.
+*Then we extend it back to 1970 using other data sources.
+
+*Initialize variables
+SMPL 1970.0 2018.0
+GENR PDWEL=0
+GENR VDWEL=0
+
+GENR VSDWEL=0
+GENR QSDWEL=0
+
+GENR VLDWEL=0
+GENR VLAGRI=0
+GENR QLAGRI=0
+GENR PLAGRI=0
+
+*Now enter the available data series. See the accompanying Excel files for details on the data.
+*First start with housing land.
+SMPL 1978.0 2018.0
+
+*VLDWELH is land underlying dwellings owned by households at current price.
+READ VLDWELH / BYVAR
+122.3209	143.7853	167.4699	190.5458	196.6730	219.4988	217.5312	236.3070	266.5412	310.1966	382.5497	
+463.2765	500.8431	470.6705	407.4174	368.8341	382.6376	335.0820	323.0086	307.3915	375.3513	548.1460	
+712.2820	871.8632	1135.3263	1504.9398	2026.8700	2596.6725	2985.9952	3217.1469	2843.2851	2781.0647	3158.8599	
+3282.6476	3154.1989	3052.7379	2894.5867	2916.3885	3031.9982	3214.6453	3380.8980
+
+*VSDWELH is stock of dwellings owned by households at current prices.
+READ VSDWELH / BYVAR
+386.1954	456.8878	536.1411	621.0460	708.0694	784.3469	850.6030	906.2145	963.7111	1026.2461	1088.2537 
+1154.7571	1234.0922	1300.8060	1347.2976	1386.7610	1425.1383	1475.1736	1533.9503	1587.5558	1631.7447	1678.3711	
+1753.2441	1850.1868	1949.0248	2075.9564	2220.5710	2382.8589	2563.5711	2762.8653	2901.7519	2956.2761	3073.6552	
+3210.4822	3296.2526	3378.0286	3452.1505	3500.6814	3581.3985	3696.7165	3785.6903
+
+*Unfortunately, INSEE does not publish a volume series for dwellings owned by households.
+*We will compute an implicit price using overall dwellings and apply it to dwellings owned by households.
+
+*VSDWELA is nominal stock of dwellings in the national economy at current prices.
+READ VSDWEL / BYVAR
+472.7670	552.1480	640.7400	735.8960	833.6540	920.1240	996.8910	1063.7580	1133.2660	1207.7810	1284.3420	
+1368.5090	1468.6330	1557.1260	1623.8470	1683.5300	1741.4070	1811.6660	1892.6390	1968.0640	2033.6810	2092.5640	
+2178.8980	2294.7480	2411.0500	2559.9720	2727.7690	2918.7750	3132.9030	3370.3510	3532.8960	3595.7470	3740.8690	
+3912.7290	4018.5710	4114.5030	4203.1700	4267.3870	4371.0640	4515.6660	4629.6390
+
+*QSDWELA is real stock of dwellings in the national economy at current prices.
+READ QSDWEL / BYVAR
+1751.2230	1837.4445	1923.1949	2005.6680	2081.1406	2152.5973	2220.4509	2285.4194	2351.6742	2419.5106	2490.9541	
+2567.0759	2638.5825	2701.8625	2760.8107	2816.1087	2874.5957	2932.2908	2986.7648	3042.3677	3100.5412	3163.8931	
+3230.0737	3294.4861	3360.4439	3428.7685	3499.3759	3574.7015	3655.4648	3739.8349	3818.1300	3882.7294	3949.6733	
+4017.1913	4081.3602	4144.6745	4205.1824	4263.6457	4324.8055	4392.8514	4462.5243
+
+GENR PSDWEL = VSDWEL/QSDWEL
+GENR QSDWELH = VSDWELH/PSDWEL
+
+*Now, we can get a measure of residential real estate value by adding land stock to structures stock.
+GENR VDWELH = VLDWELH + VSDWELH
+
+*For 1970-1978, we do not have official land data. We will extend the series VDWEL above using real estate data from
+*Piketty (2014). We also extend the nominal and real dwellings series.
+
+*First, read in the Piketty (2014) residential real estate series. Splice it in with the series computed above.
+SMPL 1970.0 1978.0
+READ VDWELH2 / BYVAR
+125.4401	141.5445	162.7784	192.5821	247.7447	286.2550	340.8544	391.0092	457.1921
+GENR VDWELH = VDWELH2*VDWELH(9)/VDWELH2(9)
+
+*Now we extend back the nominal and real dwellings series.
+*From 1995 base asset accounts, we have a measure of the value of dwellings.
+*It is in Francs, so we will use its growth rate to append it to the Euro series from contemporary INSEE accounts.
+SMPL 1970.0 1978.0
+READ VSDWEL2 / BYVAR 
+1037.7 1172.8 1336.1 1563.7 1984.5 2248.7 2649.9 2995 3465.1
+SMPL 1970.0 1977.0
+GENR VSDWELH = VSDWEL2*VSDWELH(9)/VSDWEL2(9)
+*We don't have a constant price series for pre-1978 housing stocks.
+*Will use Insee's construction cost index (CCI) to deflate VSDWEL for 1970-1978.
+SMPL 1970.0 1978.0
+READ CCI / BYVAR
+226.00 241.00 257.00 280.00 339.00 364.00 415.00 449.00 499.00
+GENR CON = (VSDWELH(9)/QSDWELH(9))/CCI(9)
+GENR QSDWELH = VSDWELH/(CCI*CON)
+
+*After that, we can get a measure of VLDWELH for 1970-1978.
+SMPL 1970.0 1977.0
+GENR VLDWELH = VDWELH-VSDWELH
+
+*The only ingredient we are missing to do the price/volume decomposition of land underlying dwellings is a housing price
+*index PDWEL.
+*PDWEL is a residential property price index from BIS. It runs from 1970 to 2018.
+*2000 and onwards is from official Notaires-Insee price index. Before 2000 is from a aggrgation of different sources.
+SMPL 1970.0 2018.0
+READ PDWEL / BYVAR
+6.34 6.85 7.5 8.38 9.65 10.8 12.61 14.43 15.95 18.45	21.9	23.64	24.83	26.12	26.98	27.91	29.39	31.83	35.69	
+39.7	42.73	43.93	42.36	42.08	42.05	41.67	42.35	42.15	43.26	46.9	50.65	54.55	59.86	67.17	77.48	88.89	97.5	
+102.9	99.3	96.1	102.8	106.61	104.5	102.8	100.5	100.2	101.9	105.21	108.61
+
+*Now generate the missing implicit price of dwellings.
+SMPL 1970.0 2018.0
+GENR PSDWEL=VSDWELH/QSDWELH
+
+*Now rescale prices to be 1 in 1970.
+GENR CON=PDWEL(1)
+GENR PDWEL=PDWEL/CON
+GENR CON=PSDWEL(1)
+GENR PSDWEL=PSDWEL/CON
+GENR QSDWELH=QSDWELH*CON
+
+*We can now do the price/volume decomposition of land using a Fisher index.
+*First get measure for overall QDWEL, since VLDWEL = PDWEL*QDWEL - PSDWEL*QSDWEL
+SMPL 1970.0 2018.0
+GENR VDWELH = VSDWELH+VLDWELH
+GENR QDWELH = VDWELH/PDWEL
+
+*Get PLDWEL and QLDWEL from following Fischer index
+GENR QSDWELH=-QSDWELH
+INDEX PDWEL QDWELH PSDWEL QSDWELH / CHAIN FISHER=PLDWELH QFISHER=QLDWELH
+GENR QSDWELH=-QSDWELH
+
+*This is only for housing owned by households. We want to get only the private land. 
+*The INSEE housing ownership shares (Baron,2008) are:
+*Households	82.11 %
+*Non-financial corporations	14.32 %
+*Financial corporations	1.65 %
+*Local government	1.73 %
+*National government	0.19 %
+*So we divide the volume by:
+GENR CON = 82.11/(82.11+14.32+1.65)
+GENR QLDWELP = QLDWELH/CON(1)
+GENR PLDWELP = PLDWELH
+GENR VLDWELP = QLDWELP*PLDWELP
+
+
+
+**
+
+*Now we can do the agricultural land estimation.
+*First read in the INSEE land series.
+SMPL 1978.0 2018.0
+*VLAGRIH is the current price value of land under cultivation on the household balance sheet.
+READ VLAGRIH / BYVAR
+110.2804	116.0682	117.9867	124.1336	129.5858	133.6575	133.9623	128.5499	125.9706	113.1461	106.1450	106.5491	
+119.6890	110.6605	99.4960	90.9301	88.1903	82.1034	79.3219	76.8280	80.7496	87.7776	94.3550	98.4534	108.8942	120.7574	
+132.9654	142.2944	144.4064	151.9703	143.0104	130.2480	139.0013	145.7367	144.5944	144.9476	141.5514	140.7101	
+145.4463	155.8764	155.4063
+*VLAGRIC is the current price value of land under cultivation on the non-financial corporation balance sheet.
+READ VLAGRIC / BYVAR
+37.2638	38.9112	39.7836	41.9658	44.1793	45.7186	45.7204	44.2938	43.4318	38.9927	36.7859	36.9666	42.1561	43.2867	42.5152	
+42.4818	45.2625	47.9962	50.4679	55.6097	63.7600	77.8170	91.3371	102.8779	117.6665	136.7723	161.7261	188.8093	204.6783	
+230.6221	227.7508	220.7165	250.0374	275.7517	291.9762	306.8817	317.6173	333.7903	356.7581	388.3018	429.1977
+*We add these together to get a measure of privately owned agricultural land.
+GENR VLAGRIP = VLAGRIH + VLAGRIC
+
+*QLAGRI is the proportion of national land used for agriculture (World Bank). We get similar values if we extrapolate hectares data from France Agricultural Minister.
+SMPL 1970.0 2016.0
+READ QLAGRI / BYVAR
+59.34444263 59.5782044 59.38096791 59.2805234 59.24765065 59.09241822 58.47879358 58.2760783 58.36921775	
+58.13728225	57.9327407	57.86882147	57.79394465	57.64601728	57.54192025	57.42138683	57.33555243	57.25884935	
+56.30371338	56.14099399	55.87052503	55.67347045	55.48974902	55.31990649	55.16211658	55.06221781	54.96378505	
+54.86023375	54.75138914	54.6584316	54.43607963	54.26422923	54.07685204	53.90833912	53.7987147	53.67550923	
+53.53360406	53.33892184	53.16359762	52.99886734	52.82792694	52.74081058	52.67908399	52.54923164	52.53608375	52.46376323	52.44754417
+
+*First need to extrapolate QLAGRI for 2017,2018. Take the growth rate of the previous five years.
+GENR CON = (QLAGRI(47)/QLAGRI(42))**(1/5)-1
+SMPL 2017.0 2018.0
+GENR QLAGRI = LAG(QLAGRI)*(1+CON(1))
+
+*Get an implicit price of agricultural land
+SMPL 1978.0 2018.0
+GENR PLAGRIP = VLAGRIP/QLAGRI
+
+*To extend VLAGRI back to 1970, I have the price of agricultural land from Agreste from 1970 to 1978.
+SMPL 1970.0 1978.0
+READ PLAGRI / BYVAR
+7250 7650 8500 9800 11200 12800 14550 16250 17950
+GENR PLAGRIP = PLAGRI*(PLAGRIP(9)/PLAGRI(9))
+GENR VLAGRIP = PLAGRIP*QLAGRI
+
+*Generate implicit price and rescale to P=1 in 1970
+SMPL 1970.0 2018.0
+GENR PLAGRIP=VLAGRIP/QLAGRI
+GENR CON=PLAGRIP(1)
+GENR PLAGRIP=PLAGRIP/CON
+GENR QLAGRIP=QLAGRI*CON
+
+**
+
+*Aggregate price and quantity of land underlying buildings and agricultural land.
+INDEX PLDWELP QLDWELP PLAGRIP QLAGRIP / CHAIN FISHER=PL QFISHER=QL
+GENR VL=PL*QL
+
+SMPL 1970.0 2018.0
+GRAPH(PLDWELP,PLAGRIP,PL,YEAR)
+GRAPH(QLDWELP,QLAGRIP,QL,YEAR)
+
+PRINT YEAR VLDWELP QLDWELP PLDWELP
+PRINT YEAR VLAGRIP QLAGRIP PLAGRIP
+PRINT YEAR VL QL PL
+
+STOP

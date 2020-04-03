@@ -1,0 +1,185 @@
+
+
+**********************************************************************
+******************************* Japan ********************************
+**********************************************************************
+*This Shazam file estimates land underlying dwellings and agricultural land from 1969 to 2014.
+
+*V indicates a value series in local currency (billion yens).
+*Q indicates a constant prices series, which we interpret as a quantity series.
+*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-period market
+*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+*There are 46 years covering 1969 to 2014.
+SMPL 1 46
+TIME 1969 1 YEAR
+
+SMPL 1969.0 2014.0
+GENR CON = 0
+GENR CHECK=0
+
+*Initialize variables
+SMPL 1969.0 2014.0
+GENR PDWEL=0
+GENR VDWEL=0
+
+GENR VSDWEL=0
+GENR VSDWELH=0
+GENR QSDWEL=0
+
+GENR VLAGRIP=0
+GENR QLAGRIP=0
+GENR PLAGRIP=0
+
+*Now enter the available data series. See the accompanying Excel files for details on the data.
+*Each of our data series from the Cabinet Office are split into subsamples from different benchmark years. So we need to splice them.
+
+*Our land underlying buildings series owned by households VLBUILDH is mostly composed of land underlying dwellings, so we will interpret it as such (assumption). See article appendix for details.
+*Unfortunately, land underlying buildings owned by households stopped being published after 2014 National Accounts. So we stop our estimation at 2014.
+*To match that in our decomposition we need a measure of dwellings stock owned by household (VSDWELH). For 1994-2014, we have that from the 2018 National Accounts (Cabinet Office website).
+SMPL 1994.0 2014.0
+READ VSDWELH / BYVAR
+286941.6	290092.8	306008.9	311330.5	308635.2	309244.8	312484.6	310091	308684.4	311339.1	314778.1	316418.4	323789.9	
+327722.3	330495.4	316032	314167.2	309054.8	304422.2	314170.5	321092.6	319029.9	317715.4	321350	322921
+*Before 1994, Japan's official National Accounts don't separate dwellings owned by households from overall dwellings. But the National Accounts published on the OECD website do so back to 1980.
+SMPL 1980.0 1993.0
+READ VSDWELH / BYVAR
+143397.7	150373.4	158717.4	161747	168267.7	172727.4	174989	188256.8	199461.3	223243	243318.1	255568.2	264986.1	275800.8
+*Before 1980, we only have a series for overall dwellings from the 1998 National Accounts, so we use that to splice the household-owned dwellings back to 1969 (see article appendix for details).
+SMPL 1969.0 1980.0
+READ VSDWEL / BYVAR
+16087.2192	20654.6198	24888.1736	36496.8348	51406.5233	61418.9334	68839.9506	82531.4912	90911.3073	101808.3015	122973.7005	133624.605
+GENR VSDWELH = VSDWEL*(VSDWELH(12)/VSDWEL(12))
+
+*Now we need a volume series for net dwellings owned by households QSDWLH. The 2018 National Accounts (Cabinet Office website) give us exactly that for 1994-2014.
+SMPL 1994.0 2014.0
+READ QSDWELH / BYVAR
+283841.5	289212.9	299328.3	305876.4	309006	312320.8	315699	317958.5	319610.3	320877.4	322184.1	323272.6	324197.8	323453.3	
+321865.9	317921.6	314168.8	309054.8	306718.9	305607.2	303723.5
+*Before 1994, I can only find volume measures for overall dwellings. Assuming that the price path of dwellings owned by households and overall dwellings follow the same path, I can splice
+*the volume of the former with the volume of the latter. First use data from OECD for 1980-2013, and then from the 1998 National Accounts (Cabinet Office) for 1969-1980.
+SMPL 1980.0 1994.0
+READ QSDWEL / BYVAR
+211569.7	219011.1	225788.8	231476.5	236507.1	241962.2	248636.3	259491	272913.9	285641.8	297908.8	308084.2	316411.7	324697	334169
+GENR QSDWELH = QSDWEL*(QSDWELH(26)/QSDWEL(26))
+SMPL 1969.0 1980.0
+READ QSDWEL / BYVAR
+49046.4	59523.4	69910.6	81648.4	95021.3	105349.8	115309.8	125810.2	135486.3	145648.5	154683.9	160993.5
+GENR QSDWELH = QSDWEL*(QSDWELH(12)/QSDWEL(12))
+
+*We now the land underlying buildings series owned by households VLBUILDH introduced above.
+*We have data for 1969-1994 from the 1998 National Accounts (benchmark=1990) and 1994-2014 from the 2014 National Accounts (benchmark=2005).
+*We splice the latter with the former to account for the slight discrepancy in the common year.
+SMPL 1994.0 2014.0
+READ VLBUILDH / BYVAR
+943599.2	900664.4	884991	881718.8	863067.5	842690.3	801091.8	756217.4	710871.6	668944.4	636315.5	623192.7	637956.5	
+658287	637151.5	611429.1	597663.6	580815.1	572862	570599.1	567521.7
+SMPL 1969.0 1994.0
+READ VLBUILD1 / BYVAR
+62789.1	77785.8	93450.5	129851.9	168504.6	165840.9	175433.7	187156.8	202694.5	235450.2	288886.2	347632.3	403322.8	434691.5	
+452950.1	475308.1	515929	660584.9	883544.6	972422.1	1130121.1	1227685.8	1123571.8	1001370	959862.8	939770
+GENR VLBUILDH = VLBUILD1*(VLBUILDH(26)/VLBUILD1(26))
+*As explained in the article's appendix, we interpret VLBUILDH as VLDWELH.
+SMPL 1969.0 2014.0
+GENR VLDWELH = VLBUILDH
+
+*The last ingredient need to decompose land underlying dwellings into price/volume components is a housing price index. We read in the PI from BIS. 
+*We make the assumption that PDWEL=PDWELH (see article's appendix).
+SMPL 1969.0 2014.0
+READ PDWELH / BYVAR
+29.81	35.48	40.82	50.1	65.91	67.69	66.35	68.51	71.63	76.44	85.14	96.15	105.48	112.45	117.02	120.43	123.17	127.5	138.8	145.43	
+160.77	180.58	180.29	171.63	165.48	162.5	159.86	157.12	155.19	151.78	146.54	140.67	134.04	126.49	118.37	111.59	106.83	
+104.57	103.8	101.15	98.27	100.24	99.24	98.81	101.58	102.18
+
+*Now generate the implicit prices that correspond to the above data.
+SMPL 1969.0 2014.0
+GENR PSDWELH=VSDWELH/QSDWELH
+*Now rescale prices to be 1 in 1969.
+GENR CON=PDWELH(1)
+GENR PDWELH=PDWELH/CON
+GENR CON=PSDWELH(1)
+GENR PSDWELH=PSDWELH/CON
+GENR QSDWELH=QSDWELH*CON
+
+*We can now get a measure for overall Q, since VLDWELH = PDWELH*QDWELH - PSDWELH*QDWELH.
+GENR VDWELH = VSDWELH+VLDWELH
+GENR QDWELH = VDWELH/PDWELH
+
+*Get PLDWELH and QLDWELH from following Fischer index.
+GENR QSDWELH=-QSDWELH
+INDEX PDWELH QDWELH PSDWELH QSDWELH / CHAIN FISHER=PLDWELH QFISHER=QLDWELH
+GENR QSDWELH=-QSDWELH
+
+*Now all we have to do is adjust our estimated land numbers for the housing owned by the rest of the (non-household) private sector. 
+*We use dwellings ownership ratio for that (see article's appendix).
+*First read in the value of dwellings owned by households. As for dwellings owned by households, we retropolate the series from the 2018 National Accounts back to 1980 by splicing 
+*in the OECD series.
+SMPL 1994.0 2014.0
+READ VSDWELC / BYVAR
+50416.1	50075.9	51530.2	51902.1	51047.8	50452.7	50095.9	49055.3	48249.7	48220.6	48666.1	48885.8	50210.5	51040.2	51602.6	49463.2	
+48918.4	47811.2	46734.9	47955.1	49295.3
+SMPL 1980.0 1994.0
+READ VSDWEL1 / BYVAR
+24350.6	25210	26176.6	26593	27646.9	28362.4	28724.2	30804.9	33079.3	37622.1	42905.6	46733.9	48562.3	49746.9	50416.1
+GENR VSDWELC = VSDWEL1*(VSDWELC(26)/VSDWEL1(26))
+
+*We don't have ownership data before 1980, so we will compute the NFC ownership ratio for 1980-2014, and assume that the pre-1980 ratio is constant at the 1980 level.
+SMPL 1980.0 2014.0
+GENR VSDWELCR = VSDWELC/VSDWELH
+SMPL 1969.0 1979.0
+GENR VSDWELCR = VSDWELCR(12)
+
+*Now we can multiply our volumes (and adjust our values) by (1+VSDWELCR) to change from stocks owned by households to stocks owned by the private sector.
+SMPL 1969.0 2014.0
+GENR QDWELP=QDWELH*(1+VSDWELCR)
+GENR QSDWELP=QSDWELH*(1+VSDWELCR)
+GENR QLDWELP=QLDWELH*(1+VSDWELCR)
+GENR PDWELP = PDWELH
+GENR PSDWELP = PSDWELH
+GENR PLDWELP = PLDWELH
+GENR VDWELP=QDWELP*PDWELP
+GENR VSDWELP=QSDWELP*PSDWELP
+GENR VLDWELP=QLDWELP*PLDWELP
+
+*We now turn to agricultural land.
+*First read in the land under cultivation owned by the private sector value VLAGRIP from the Japanese Accounts.
+*We splice the series from the 2014 National Accounts (benchmark=2011) with the series from the 1998 National Accounts (benchmark=1990).
+SMPL 1994.0 2014.0
+READ VLAGRIP / BYVAR
+134102.2	127806.6	124480.7	119172.4	112312.4	105870.3	99352	92067.1	85545.5	80227.1	75119.7	71432.4	
+68893.2	66438	62989.9	59193.4	55734.5	53498.8	51263.5	49068	47853.7
+SMPL 1969.0 1994.0
+READ VLAGRIP1 / BYVAR
+23191.1	27970	34904.9	51482.9	62030.9	61519.3	63967.5	66445.1	71192.1	77784.6	88296.7	99167.3	108848.5	112686.4	
+114311.9	117176.7	121588	136005.3	163665.4	171244.8	187058.3	197951.1	182165.3	155764	142262.7	131734.7
+GENR VLAGRIP = VLAGRIP1*(VLAGRIP(26)/VLAGRIP1(26))
+
+*Divide it by the OECD's measure of the agricultural area in Japan to get an implicit price.
+SMPL 1969.0 2014.0
+READ QLAGRI / BYVAR
+60100	60200	60200	60300	60040	59960	59380	58970	57520	57960	57410	56840	56470	56150	55730	55360	55150	54940	54740	
+54610	54420	54260	54110	53960	53790	53580	53400	53170	52790	52430	52040	51650	51240	50830	50380	49940	49490	49050	
+48660	48300	47930	47630	47360	47140	46920	46710	46500	46280	46090	45930	45610	45490	45380	45180	44960	44710
+*Because we want to measure volume/price up to a normalizing factor, we can simply assume that the quantity of overall agricutural land = the quantity of agri land owned by the private sector.
+
+GENR PLAGRIP = VLAGRIP/QLAGRI
+*Now rescale prices to be 1 in 1969.
+GENR CON=PLAGRIP(1)
+GENR PLAGRIP=PLAGRIP/CON
+GENR QLAGRIP=QLAGRI*CON
+
+*Aggregate land underlying dwellings and land under cultivation into total land using a Fisher index.
+INDEX PLAGRIP QLAGRIP PLDWELP QLDWELP / CHAIN FISHER=PL QFISHER=QL
+GENR VL=PL*QL
+
+GRAPH(VDWELP,VSDWELP,VLDWELP,VLAGRIP,YEAR)
+GRAPH(QDWELP,QSDWELP,QLDWELP,QLAGRIP,YEAR)
+GRAPH(PDWELP,PSDWELP,PLDWELP,PLAGRIP,YEAR)
+
+PRINT YEAR VLDWELP QLDWELP PLDWELP
+PRINT YEAR VLAGRIP QLAGRIP PLAGRIP
+PRINT YEAR VL QL PL
+
+
+STOP

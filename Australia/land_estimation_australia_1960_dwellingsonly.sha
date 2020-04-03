@@ -1,0 +1,204 @@
+
+
+
+**********************************************************************
+***************************** Australia ******************************
+**********************************************************************
+*This Shazam file estimates land underlying dwellings from 1960 to 2019.
+*We can't extend commercial land data back to 1960.
+*Surprisingly, I cannot find any farmland price data before 1989, so I cannot extend agricultural land back to 1960.
+*Finding such an index would be the low-lying fruit to improve the Australian data 
+
+*V indicates a value series in local currency;
+*Q indicates a constant prices series, which we interpret as a quantity series. Except when noted, the base year for the constant price series 
+*is 2014.
+*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-period market
+*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+*Australia's National Accounts, in constrast to the NAs of other countries, accounts assets as of June 30th instead of December 31st. 
+*Thus the asset values are mid-year rather than end-year estimates.
+
+
+*There are 60 years covering 1960 to 2019.
+SMPL 1 60
+TIME 1960 1 YEAR
+
+SMPL 1960.0 2019.0
+GENR CON = 0
+GENR CHECK=0
+
+*Dwellings data goes back to 1960, but agricultural and commercial land can only be measured from 1989.
+*Initialize variables
+SMPL 1960.0 2019.0
+GENR PDWEL=0
+GENR PCOMM=0
+GENR VDWEL=0
+
+GENR VSDWEL=0
+GENR VSCOMM=0
+GENR QSDWEL=0
+GENR QSCOMM=0
+GENR QSDWELO=0
+GENR QSCOMMO=0
+
+GENR VLDWEL=0
+GENR VLCOMM=0
+GENR VLAGRI=0
+GENR QLAGRI=0
+GENR PLAGRI=0
+
+GENR VIDWEL = 0
+GENR VICOMM = 0
+GENR QIDWEL = 0
+GENR QICOMM = 0
+
+*Now enter the available data series. See the accompanying Excel files for details on the data.
+
+*PDWEL is a residential property price index from BIS. It runs from 1970 to 2018.
+SMPL 1970.0 2019.0
+READ PDWEL / BYVAR
+3.18	3.55	3.95	4.66	5.93	6.53	7.34	7.96	8.32	9.46	10.58	12.4	12.99	13.5	14.83	
+16.37	17.84	17.94	21.05	28.02	28.5	28.72	29.48	30.27	31.29	31.71	32.05	32.95	35.8	37.89	
+41.56	44.97	53.99	63.08	68.34	69.89	74.54	81.41	87.12	87.32	100.97	98.74	97.19	102.32	
+112.68	123.72	128.75	141.82	140.95	129.71
+
+*VSDWEL is the current net value of housing structures in the national balance sheet. We have all balance sheet information from 1960 onwards.
+SMPL 1960.0 2019.0
+READ VSDWEL / BYVAR
+9.88	10.661	11.187	11.928	12.938	14.169	15.432	16.772	18.295	20.179	22.545	25.494	29.558	
+36.645	47.417	58.408	69.742	80.282	88.692	98.201	113.638	135.231	158.2	175.679	193.542	217.801	
+243.394	267.571	309.237	367.017	408.732	428.564	442.112	462.636	490.677	519.639	539.622	556.525	582.144	
+624.749	677.822	775.409	820.714	896.45	991.246	1080.42	1157.953	1239.46	1325.212	1390.028	1451.722	
+1511.119	1555.622	1614.983	1699.15	1793.234	1885.837	1987.634	2087.115	2150.524
+
+*VSCOMM is the current net value of non-residential structures in the national balance sheet. 
+SMPL 1960.0 2019.0
+READ VSCOMM / BYVAR
+13.58	14.85	16.106	17.488	19.412	21.49	23.90	26.60	29.49	32.99	37.11	42.34	48.49	57.48	74.84	
+96.08	113.33	128.43	142.66	161.98	188.31	219.83	258.57	291.74	315.46	347.45	388.78	
+429.44	473.84	522.49	565.72	582.05	581.61	586.12	603.90	633.89	663.91	693.64	727.408	
+770.065	813.934	841.656	877.35	937.751	1019.936	1115.99	1234.791	1366.228	1502.216	1610.912	
+1698.651	1821.131	1968.772	2133.321	2293.705	2413.904	2502.751	2601.903	2745.972	2883.736
+
+*QSDWEL is the constant net value of housing structures in the national balance sheet.
+SMPL 1960.0 2019.0
+READ QSDWEL / BYVAR
+215.003	228.028	239.26	251.96	266.57	283.71	300.28	317.39	336.40	358.01	381.93	405.48	
+431.33	459.78	488.08	508.52	535.07	565.79	597.34	628.73	662.98	702.62	740.56	767.16	
+796.92	831.12	864.64	892.50	922.28	959.73	994.93	1023.69	1051.78	1086.63	1125.51	1165.153	
+1195.808	1225.344	1263.848	1306.04	1356.721	1384.671	1423.349	1470.449	1522.522	1571.891	
+1614.616	1653.79	1692.37	1727.218	1763.496	1800.726	1831.267	1859.775	1892.052	1930.66	
+1975.854	2022.033	2066.541	2108.717
+
+*QSCOMM is the constant net value of non-residential structures in the national balance sheet.
+SMPL 1960.0 2019.0
+READ QSCOMM / BYVAR
+285.366	304.152	324.60	345.44	369.43	396.04	426.37	456.25	486.92	520.97	556.15	594.05	
+631.60	665.61	699.48	731.04	759.19	787.35	814.39	843.25	869.46	897.04	927.92	953.98	
+976.46	1000.76	1030.93	1061.14	1093.63	1126.44	1162.42	1189.47	1208.18	1222.84	1237.92	1259.313	
+1285.222	1313.651	1345.335	1381.735	1414.378	1433.529	1459.279	1492.663	1529.42	1573.749	
+1629.51	1695.297	1769.908	1855.819	1939.72	2030.558	2152.539	2285.766	2408.106	2501.368	
+2572.402	2632.179	2701.787	2760.878
+
+*VLDWEL is the current price net value of land underlying dwellings in the national balance sheet.
+SMPL 1989.0 2019.0
+READ VLDWEL / BYVAR
+410.5	432.80	444.40	466.60	483.00	545.00	565.90	584.90	700.30	748.40	832.70	951.00	
+1038.80	1299.30	1592.30	1820.70	1939.70	2183.20	2499.60	2602.60	2414.10	3067.10	3045.60	2901.40	
+3073.30	3429.30	3945.20	4169.60	4783.70	4833.90	4460.10
+
+*VLCOMM is the current price net value of land underlying non-residential buildings in the national balance sheet.
+SMPL 1989.0 2019.0
+READ VLCOMM / BYVAR
+111.5	101.90	90.60	78.50	76.30	78.80	81.30	82.70	88.70	93.40	99.00	104.30	110.30	126.80	156.70	
+178.30	203.50	220.90	257.30	312.60	326.80	341.80	330.40	341.00	351.40	360.90	390.30	
+430.00	470.10	496.30	542.30
+
+*VLAGRI is the current price net value of land under cultivation in the national balance sheet.
+SMPL 1989.0 2019.0
+READ VLAGRI / BYVAR
+62.30	64.60	66.70	56.60	59.90	58.70	61.40	81.10	84.80	92.60	97.50	103.40	113.80	129.60	142.80	
+177.60	199.50	206.60	222.40	242.50	254.00	263.20	262.80	263.80	257.80	257.40	256.60	
+270.80	290.00	323.20	359.60
+
+*QLAGRI is the proportion of national land used for agriculture (World Bank). 
+SMPL 1961.0 2016.0
+READ QLAGRI / BYVAR
+60.08	60.36	60.72	61.05	61.57	61.72	62.06	61.81	62.34	62.71	62.90	63.06	63.39	63.49	63.37	63.49	
+62.30	62.03	62.54	62.86	62.84	62.23	61.33	61.58	61.56	61.29	61.31	61.48	60.80	60.46	60.27	60.68	
+59.92	61.06	60.31	60.56	60.16	60.37	59.06	59.29	59.32	58.19	57.21	57.29	57.94	56.61	55.38	54.32	
+53.24	51.88	53.33	52.78	51.63	52.88	47.63	48.24
+*Also try with the OECD measure
+*SMPL 1961.0 2016.0
+*READ QLAGRI / BYVAR
+*303.45	322.68	332.01	355.49	371.36	397.84	414.48	415.61	416.73	417.87	412.83	407.87	
+*403.87	422.87	423.87	422.33	412.41	426.70	440.87	441.86	431.71	465.31	449.75	472.39	
+*473.10	469.75	471.06	472.23	478.77	480.81	458.74	473.78	464.86	475.00	403.00	365.00	
+*401.00	443.00	458.00	476.00	501.27	481.24	473.75	480.80	497.42	480.65	445.30	443.74	
+*460.11	429.68	480.78	474.93	466.11	473.07	464.56	463.78
+
+*First need to extrapolate QLAGRI for 2017,2018 and 2019. Take the growth rate of the previous five years.
+GENR CON = (QLAGRI(57)/QLAGRI(52))**(1/5)-1
+SMPL 2017.0 2019.0
+GENR QLAGRI = LAG(QLAGRI)*(1+CON(1))
+*We also retropolate similarily for 1960
+GENR CON = (QLAGRI(7)/QLAGRI(2))**(1/5)-1
+SMPL 1960.0 1960.0
+GENR QLAGRI = LAG(QLAGRI,-1)/(1+CON(1))
+
+
+**First, we have enough data to estimate only land under dwellings from 1960.
+
+*For 1960-1988, we have an aggregate value of housing (structures and land) from the Reserve Bank of Australia (via Goldbloom & Craston (2).
+SMPL 1960.0 1989.0
+READ VDWEL2 / BYVAR
+24.10	26.20	28.30	29.10	33.00	35.70	38.80	39.90	43	48.1	56	64.7	74	89.9	117.8	132.9	
+152.7	169.7	181.3	197.8	235.5	281.8	301.1	320.1	361.2	401.9	423	443.9	562.5	714.4
+*The value for 1989 is very close to the sum of our dwellings and residential land series for 1989 onwards from the ABS (367.0+410.5=777.5).
+*This is reassuring. But we will still splice in to remove the slight discrepancy.
+SMPL 1989.0 2019.0
+GENR VDWEL = VSDWEL + VLDWEL
+SMPL 1960.0 1989.0
+GENR VDWEL = VDWEL2*VDWEL(30)/VDWEL2(30)
+
+*Finally, get VLDWEL for 1960 to 1988
+SMPL 1960.0 1988.0
+GENR VLDWEL = VDWEL-VSDWEL
+
+*The BIS price index starts only from 1970, so we extend it using a series from Stapledon (2007).
+SMPL 1960.0 1970.0
+READ PDWEL2 / BYVAR
+841.00	762.00	848.00	953.00	993.00	1035.00	1073.00	1113.00	1192.00	1293.00	1428.00
+GENR PDWEL = PDWEL2*PDWEL(11)/PDWEL2(11)
+
+SMPL 1960.0 2019.0
+FORMAT(F12.0,5F11.3)
+PRINT YEAR VLDWEL VDWEL
+
+*Now generate the implicit prices that correspond to the above data.
+SMPL 1960.0 2019.0
+GENR PSDWEL=VSDWEL/QSDWEL
+*Now rescale prices to be 1 in 1960
+GENR CON=PDWEL(1)
+GENR PDWEL=PDWEL/CON
+GENR CON=PSDWEL(1)
+GENR PSDWEL=PSDWEL/CON
+GENR QSDWEL=QSDWEL*CON
+
+*We can now get a measure for overall QDWEL, since VLDWEL = PDWEL*QDWEL - PSDWEL*QSDWEL
+GENR VSDWEL = PSDWEL*QSDWEL
+GENR VDWEL = VSDWEL+VLDWEL
+GENR QDWEL = VDWEL/PDWEL
+*Get PLDWEL and QLDWEL from following Fischer index
+GENR QSDWEL=-QSDWEL
+INDEX PDWEL QDWEL PSDWEL QSDWEL / CHAIN FISHER=PLDWEL QFISHER=QLDWEL
+GENR QSDWEL=-QSDWEL
+
+GRAPH(VSDWEL,VLDWEL,VDWEL,YEAR)
+GRAPH(PSDWEL,PLDWEL,PDWEL,YEAR)
+GRAPH(QSDWEL,QLDWEL,QDWEL,YEAR)
+
+GENR LANDVALR = VLDWEL/VDWEL
+GRAPH(LANDVALR,YEAR)
+PRINT YEAR VLDWEL QLDWEL PLDWEL

@@ -1,0 +1,298 @@
+
+**********************************************************************
+******************************* Korea ********************************
+**********************************************************************
+*This Shazam file estimates land underlying dwellings from 1964 to 2018.
+
+*V indicates a value series in local currency;
+*Q indicates a constant prices series, which we interpret as a quantity series.
+*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-period market
+*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+*There are 55 years covering 1964 to 2018.
+SMPL 1 55
+TIME 1964 1 YEAR
+
+SMPL 1964.0 2018.0
+GENR CON = 0
+GENR CHECK=0
+
+*Korea is the easiest to estimate: The Korean Statistical Agency (KOSIS) publishes official current and constant price 
+*estimates of land from 1995.
+*We extend back to 1964 using land value and price data estimated by economists at the Bank of Korea (Cho et al., 2016). 
+*The two datasets separate land into different categories, so I will have to match land types. The KOSIS data follows the
+*recommended Eurostat-OECD (2015) categories, so we will use that dataset as the baseline and extend it back using 
+*the Cho et al. (2016 series).
+*Also, both datasets cover more types of land then we need for our productivity, so we will only decompose the stocks 
+*for the 3 types of land we need: land underlying dwellings, land underlying other buildings (non-residential buildings),
+*and agricultural land (excluding forest land).
+
+*I will read in all the variables from both datasets and then merge them. The series are all in trillions of wons (current or constant).
+
+*Initialize variables
+SMPL 1964.0 2018.0
+GENR VLKDWEL=0
+GENR VLKCOMM=0
+GENR VLKAGRI=0
+
+GENR QLKDWEL=0
+GENR QLKCOMM=0
+GENR QLKAGRI=0
+
+GENR VLCDRY=0
+GENR VLCPADDY=0
+GENR VLCDWNR=0
+GENR VLCFACT=0
+
+GENR PLCDRY=0
+GENR PLCPADDY=0
+GENR PLCDWNR=0
+GENR PLCFACT=0
+
+*Now enter the available data series. See the accompanying Excel files for details on the data.
+*First read in the current and constant price series from KOSTAT for 1995-2018.
+*These are for the entire economy. We will generate an implicit price, and then deflate the private series with it.
+
+*VLKDWEL is the current price value of land underlying dwellings.
+SMPL 1995.0 2018.0
+READ VLKDWEL / BYVAR
+591.3925	628.6985	658.9558	600.5409	637.375	664.1379	700.2903	839.9082	963.9446	1101.4407	1276.7233	1517.2447	
+1705.3415	1802.8163	1919.5837	1999.1442	2112.507	2157.2771	2197.8625	2351.4043	2488.7593	2641.3977	2847.4454	3100.5224
+
+*VLKCOMM is the current price value of land underlying non-residential buildings.
+SMPL 1995.0 2018.0
+READ VLKCOMM / BYVAR
+348.9021	370.5195	381.9664	343.545	363.5413	381.8345	402.3366	482.764	545.9806	618.7354	708.2542	825.3835	961.4458	
+996.6155	1057.1269	1121.8775	1199.6277	1228.4529	1282.5917	1373.3562	1468.1613	1574.1905	1703.9619	1851.0489
+
+*VLKAGRI is the current price value of agricultural land.
+SMPL 1995.0 2018.0
+READ VLKAGRI / BYVAR
+253.9381	262.4276	271.2562	257.2496	278.6882	292.9529	306.5594	356.1355	405.6259	478.7871	575.6974	680.8134	789.4667	
+814.1321	830.2367	852.4928	875.2393	908.5947	916.4447	934.9003	973.1261	1018.4116	1073.2776	1137.9088
+
+*QLKDWEL is the constant price value of land underlying dwellings.
+SMPL 1995.0 2018.0
+READ QLKDWEL / BYVAR
+1802.0659	1823.8144	1880.6263	1898.3025	1934.4357	1963.8772	1960.1125	2008.2469	2038.1514	2067.4608	2093.846	2138.889	2166.6675	
+2189.1362	2220.9366	2251.2384	2281.925	2308.3708	2351.3696	2403.0967	2434.9242	2479.0442	2516.075	2545.2133
+
+*QLKCOMM is the constant price value of land underlying non-residential buildings.
+SMPL 1995.0 2018.0
+READ QLKCOMM / BYVAR
+737.6095	786.9941	801.2757	827.8721	845.219	877.9248	910.7242	952.1125	982.8862	1012.2662	1044.7914	1062.0823	1104.767	
+1143.0967	1181.8216	1224.7938	1266.1499	1313.7163	1349.0027	1402.2398	1450.7084	1494.3412	1538.5061	1580.2363
+
+*QLKAGRI is the constant price value of agricultural land.
+SMPL 1995.0 2018.0
+READ QLKAGRI / BYVAR
+1029.8278	1026.6023	1023.1084	1018.2965	1014.9582	1011.2637	1007.7995	1005.073	1001.454	998.0505	994.4299	990.2723	985.5791	
+981.7814	977.8045	973.0866	973.2192	969.509	964.2513	956.9856	950.9559	945.4247	940.6993	938.3625
+
+*Generate implicit prices for national-level KOSTAT series
+SMPL 1995.0 2018.0
+GENR PLKDWEL = VLKDWEL/QLKDWEL
+GENR PLKCOMM = VLKCOMM/QLKCOMM
+GENR PLKAGRI = VLKAGRI/QLKAGRI
+
+*Now we can input the series for privately-owned land.
+*VLKDWEL is the current price value of privately-owned land underlying dwellings.
+SMPL 1995.0 2018.0
+READ VLKDWELP / BYVAR
+575.5322	611.6474	642.0302	586.0350	622.7124	649.5887	685.4063	822.6156	944.4578	
+1080.1434	1253.1078	1489.5222	1674.7248	1771.5870	1885.6766	1963.7940	2074.5537	2117.2286	
+2156.9482	2307.8046	2442.2137	2592.7132	2796.4340	3044.8363
+
+*VLKCOMM is the current price value of privately-owned land underlying non-residential buildings.
+SMPL 1995.0 2018.0
+READ VLKCOMMP / BYVAR
+255.8129	276.2752	282.9268	252.9071	266.2735	279.3055	289.9006	360.3096	409.3647	
+463.0503	528.1691	614.6761	721.7933	747.0730	789.9699	844.0228	904.3916	923.1747	
+955.4075	1016.4695	1082.8935	1161.3801	1275.5566	1391.1181
+
+*VLKAGRI is the current price value of privately-owned agricultural land.
+SMPL 1995.0 2018.0
+READ VLKAGRIP / BYVAR
+253.9381	262.4276	271.2562	257.2496	278.6882	292.9529	306.5594	356.1355	405.6259	
+478.7871	575.6974	680.8134	789.4667	814.1321	830.2367	852.4928	875.2393	908.5947	
+916.4447	934.9003	973.1261	1018.4116	1073.2776	1137.9088
+
+*We deflate it using the implicit price index from the national series.
+SMPL 1995.0 2018.0
+GENR QLKDWELP = VLKDWELP/PLKDWEL
+GENR QLKCOMMP = VLKCOMMP/PLKCOMM
+GENR QLKAGRIP = VLKAGRIP/PLKAGRI
+GENR VLKDWEL = VLKDWELP
+GENR VLKCOMM = VLKCOMMP
+GENR VLKAGRI = VLKAGRIP
+GENR QLKDWEL = QLKDWELP
+GENR QLKCOMM = QLKCOMMP
+GENR QLKAGRI = QLKAGRIP
+
+GRAPH(QLKDWEL,QLKCOMM,QLKAGRI,YEAR)
+
+*Now read in the series from Cho et al. (2016) 
+*VLCDRY is the current price value of dry paddy fields land.
+SMPL 1964.0 1995.0
+READ VLCDRY / BYVAR
+0.295	0.386	0.514	0.706	1.080	1.578	2.200	2.643	2.850	3.392	4.538	5.729	7.249	10.953	17.514	20.867	21.371	22.515	23.689	27.791	31.557	
+34.873	40.127	46.873	60.994	77.358	92.871	109.551	111.053	103.271	106.359	115.452
+
+*VLCPADDY is the current price value of paddy fields land.
+SMPL 1964.0 1995.0
+READ VLCPADDY / BYVAR
+0.565	0.747	1.001	1.349	2.037	2.957	4.076	4.986	5.616	6.780	8.897	11.595	15.278	21.560	32.999	37.967	39.651	43.295	47.122	57.207	
+62.302	65.736	70.583	79.585	96.954	119.372	135.612	150.307	149.680	138.754	139.218	150.694
+
+*VLCDWNR is the current price value of land underlying buildings.
+SMPL 1964.0 1995.0
+READ VLCDWNR / BYVAR
+0.556	0.800	1.168	1.662	2.676	3.929	5.154	5.833	6.109	7.507	9.812	11.712	12.508	17.019	31.516	38.257	44.494	49.892	57.965	80.856	
+104.166	125.144	151.757	193.388	270.183	393.806	558.525	713.735	737.203	695.939	725.820	815.757
+
+*VLCFACT is the current price value of land underlying factories. This category only starts in 1976.
+SMPL 1976.0 1995.0
+READ VLCFACT / BYVAR
+0.007	0.095	0.670	1.210	1.426	1.771	2.010	2.630	3.416	4.246	5.381	8.061	11.804	17.887	27.468	39.267	42.560	43.301	49.488	64.502
+
+*PLCDRY is the won per m2 price of dry paddy fields land.
+SMPL 1964.0 1995.0
+READ PLCDRY / BYVAR
+32.253	41.865	55.302	74.235	113.680	166.228	231.397	277.505	298.415	353.091	469.037	590.477	744.794	1124.159	1794.036	2132.736	2181.382	
+2302.499	2424.714	2858.187	3248.287	3588.572	4109.616	4801.759	6266.277	7974.360	9620.456	11398.199	11625.319	10873.684	11277.787	12412.238
+
+*PLCPADDY is the won per m2 price of paddy fields land.
+SMPL 1964.0 1995.0
+READ PLCPADDY / BYVAR
+44.630	58.837	78.727	105.146	158.357	230.932	318.265	390.581	440.302	530.463	695.781	906.450	1194.102	1686.704	2571.287	2959.770	3091.737	
+3372.897	3675.680	4454.829	4856.373	5129.368	5511.878	6217.718	7601.182	9367.643	10656.050	11848.917	11825.227	10981.903	11055.092	11877.607
+
+*PLCDWNR is the won per m2 price of land underlying buildings.
+SMPL 1964.0 1995.0
+READ PLCDWNR / BYVAR
+389.56	557.39	803.76	1110.81	1744.55	2525.73	3232.45	3563.84	3658.71	4371.80	5595.50	6538.01	6930.65	9316.94	17191.20	20840.24	23895.91	26448.04	
+30134.04	41643.09	53228.58	63240.12	75453.99	94670.00	130618.23	187261.03	261690.34	330315.44	335319.26	310735.27	317981.40	348954.46
+
+*PLCFACT is the won per m2 price of land underlying factories. This category only starts in 1976.
+SMPL 1976.0 1995.0
+READ PLCFACT / BYVAR
+2910.26	5390.38	12148.30	13116.81	13871.17	14487.15	15110.10	18228.46	22293.58	26426.76	31276.76	42566.86	
+58110.69	81725.66	111257.97	146598.13	146794.07	134614.49	143145.42	167268.26
+
+*Generate the volume series for the 1964-1995 series.
+SMPL 1964.0 1995.0
+GENR QLCDRY = VLCDRY/PLCDRY
+GENR QLCPADDY = VLCPADDY/PLCPADDY
+GENR QLCDWNR = VLCDWNR/PLCDWNR
+SMPL 1976.0 1995.0
+GENR QLCFACT = VLCFACT/PLCFACT
+
+*Aggregate the Cho et al. series so that the KOSIS series match with the Cho et al. series and to apply the government ownership ratios.
+*Aggregate the dry fields and paddy fields series from Cho et al. (2016) into a agricultural land series.
+SMPL 1964.0 1995.0
+INDEX PLCDRY QLCDRY PLCPADDY QLCPADDY / CHAIN FISHER=PLCAGRI QFISHER=QLCAGRI
+GENR VLCAGRI = PLCAGRI*QLCAGRI
+*Aggregate the factory land and buldings land series from Cho et al. (2016) into series for land underlying all buildings.
+SMPL 1964.0 1995.0
+INDEX PLCDWNR QLCDWNR PLCFACT QLCFACT / CHAIN FISHER=PLCBUILD QFISHER=QLCBUILD
+GENR VLCBUILD=PLCBUILD*QLCBUILD
+*The Cho et al. paper gives ownership numbers for 3 categories:
+*   1. Dry paddy fields, paddy fields, forest land
+*   2. Building sites, factory sites
+*   3. Other land
+* First compute the private ownership ratios for each category for each benchmark year as : 
+*    (privately-owned [type] land's share of total land)/((privately-owned [type] land's share of total land)+(government-owned [type] land's share of total land))
+SMPL 1964.0 1995.0
+GENR LASHP = 0
+GENR LBSHP = 0
+*LASHP is the private sector's ownership share of agricultural land. LBSHP is the private sector's ownership share of land underlying buildings.
+SMPL 1964.0 1964.0
+GENR LASHP = 71.9/(71.9+18.6)
+GENR LBSHP = 1.4/(1.4+0.1)
+SMPL 1976.0 1976.0
+GENR LASHP = 71.7/(71.7+18.8)
+GENR LBSHP = 1.7/(1.7+0.1)
+SMPL 1985.0 1985.0
+GENR LASHP = 70.7/(70.7+19.0)
+GENR LBSHP = 1.9/(1.9+0.3)
+SMPL 1995.0 1995.0
+GENR LASHP = 67.0/(67.0+21.1)
+GENR LBSHP = 2.4/(2.4+0.3)
+*Now linearly extrapolate between benchmark years.
+SMPL 1965.0 1975.0
+GENR LASHP = (LASHP(13)-LASHP(1))/12+LAG(LASHP)
+GENR LBSHP = (LBSHP(13)-LBSHP(1))/12+LAG(LBSHP)
+SMPL 1977.0 1984.0
+GENR LASHP = (LASHP(22)-LASHP(13))/9+LAG(LASHP)
+GENR LBSHP = (LBSHP(22)-LBSHP(13))/9+LAG(LBSHP)
+SMPL 1986.0 1994.0
+GENR LASHP = (LASHP(32)-LASHP(22))/10+LAG(LASHP)
+GENR LBSHP = (LBSHP(32)-LBSHP(22))/10+LAG(LBSHP)
+
+*We can now simply multiply QLC* by the corresponding ratio.
+*Then replace our variables from above with their private equivalents.
+SMPL 1964.0 1995.0
+GENR QLCAGRIP = QLCAGRI*LASHP
+GENR QLCBUILP = QLCBUILD*LBSHP
+GENR VLCAGRIP = QLCAGRIP*PLCAGRI
+GENR VLCBUILP = QLCBUILP*PLCBUILD
+GENR QLCAGRI = QLCAGRIP
+GENR QLCBUILD = QLCBUILP
+GENR VLCAGRI = VLCAGRIP
+GENR VLCBUILD = VLCBUILP
+
+
+*Aggregate the dwellings and non-residential land series from KOSIS into series for land underlying all buildings.
+SMPL 1995.0 2018.0
+INDEX PLKDWEL QLKDWEL PLKCOMM QLKCOMM / CHAIN FISHER=PLKBUILD QFISHER=QLKBUILD
+GENR VLKBUILD=PLKBUILD*QLKBUILD
+
+*We can now extend the official KOSIS land series backwards using the growth rate of the Cho et al. (2016) series.
+SMPL 1964.0 1995.0
+GENR VLKBUILD = VLCBUILD*(VLKBUILD(32)/VLCBUILD(32))
+GENR QLKBUILD = QLCBUILD*(QLKBUILD(32)/QLCBUILD(32))
+GENR VLKAGRI = VLCAGRI*(VLKAGRI(32)/VLCAGRI(32))
+GENR QLKAGRI = QLCAGRI*(QLKAGRI(32)/QLCAGRI(32))
+
+*We also want to separately artifically extend back the land underlying dwellings and land underlying other buildings series from KOSIS.
+SMPL 1964.0 1995.0
+GENR VLKDWEL = VLKBUILD*(VLKDWEL(32)/VLKBUILD(32))
+GENR VLKCOMM = VLKBUILD*(VLKCOMM(32)/VLKBUILD(32))
+GENR QLKDWEL = QLKBUILD*(QLKDWEL(32)/QLKBUILD(32))
+GENR QLKCOMM = QLKBUILD*(QLKCOMM(32)/QLKBUILD(32))
+
+*Now, generate a new implicit price series and scale it to 0 in 1964
+SMPL 1964.0 2018.0
+GENR PLKDWEL = VLKDWEL/QLKDWEL
+GENR PLKCOMM = VLKCOMM/QLKCOMM
+GENR PLKBUILD = VLKBUILD/QLKBUILD
+GENR PLKAGRI = VLKAGRI/QLKAGRI
+
+GENR CON=PLKDWEL(1)
+GENR PLKDWEL=PLKDWEL/CON
+GENR QLKDWEL=QLKDWEL*CON
+GENR CON=PLKCOMM(1)
+GENR PLKCOMM=PLKCOMM/CON
+GENR QLKCOMM=QLKCOMM*CON
+GENR CON=PLKBUILD(1)
+GENR PLKBUILD=PLKBUILD/CON
+GENR QLKBUILD=QLKBUILD*CON
+GENR CON=PLKAGRI(1)
+GENR PLKAGRI=PLKAGRI/CON
+GENR QLKAGRI=QLKAGRI*CON
+
+SMPL 1964.0 2018.0
+GRAPH(QLKBUILD,QLKAGRI,YEAR)
+GRAPH(PLKBUILD,PLKAGRI,YEAR)
+
+*Now all that is left is to aggregate into overall land price and volume series
+SMPL 1964.0 2018.0
+INDEX PLKBUILD QLKBUILD PLKAGRI QLKAGRI / CHAIN FISHER=PL QFISHER=QL
+GENR VL=PL*QL
+
+PRINT YEAR VLKDWEL QLKDWEL PLKDWEL
+PRINT YEAR VLKCOMM QLKCOMM PLKCOMM
+PRINT YEAR VLKBUILD QLKBUILD PLKBUILD
+PRINT YEAR VLKAGRI QLKAGRI PLKAGRI
+PRINT YEAR VL QL PL

@@ -1,0 +1,415 @@
+ Welcome to SHAZAM (Double Precision) v11.1 -  APR 2015 WIN-NT   PAR=112400
+ ...NOTE..CURRENT WORKING DIRECTORY IS: C:\Users\jules\Desktop\Diewert RA\Italy
+
+
+
+ |_**********************************************************************
+ |_******************************* Italy *******************************
+ |_**********************************************************************
+ |_*This Shazam file estimates land underlying dwellings from 1965 to 2017.
+
+ |_*V indicates a value series in local currency;
+ |_*Q indicates a constant prices series, which we interpret as a quantity series.
+ |_*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+ |_*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-perio
+ | d market
+ |_*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+ |_*There are 53 years covering 1965 to 2017.
+ |_SMPL 1 53
+
+ |_TIME 1965 1 YEAR
+  VARIABLE YEAR     CREATED WITH    53 OBSERVATIONS
+
+
+ |_SMPL 1965.0 2017.0
+
+ |_GENR CON = 0
+
+ |_GENR CHECK=0
+
+ |_GENR T=TIME(-1)
+
+ |_GENR T2=T*T
+
+
+
+ |_*Initialize variables
+ |_SMPL 1965.0 2017.0
+
+ |_GENR PDWEL=0
+
+ |_GENR VDWEL=0
+
+ |_GENR VSDWEL=0
+
+ |_GENR QSDWEL=0
+
+ |_GENR PSDWEL=0
+
+
+ |_*Now enter the available data series. See the accompanying Excel files for details on the data.
+
+ |_*We use real estate data from 2 different data sets: Brandolini (2004) for 1965-2002 Bank of Italy data for 2002-2017.
+ |_*I will read in all the variables from both datasets and then merge them.
+ |_*First, splice the two series we have for the current price value of residential real estate, VDWEL.
+ |_*Note that this is only for dwellings owned by households (see Excel file for details).
+ |_SMPL 2002.0 2017.0
+
+ |_READ VDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       16 OBSERVATIONS STARTING AT OBS      38
+
+
+ |_*Splice in the series from Brandolini (2004)
+ |_SMPL 1965.0 2002.0
+
+ |_READ VDWEL1 / BYVAR
+ ...NOTE..    1 VARIABLES AND       38 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR VDWEL = VDWEL1*(VDWEL(38)/VDWEL1(38))
+
+
+ |_*Now read in our value and volume series for dwellings structures.
+ |_*To be consistent with the residential real estate series VDWEL, we need to have a series VSDWEL that only measures residential
+ |  structures owned by ho&
+ |_*useholds.
+ |_*This is only available in Italy's balance sheet. But we dont have a quantity measure. So we need to get an implicit deflator f
+ | rom the series for all &
+ |_*dwellings, as found in the fixed assets by industry dataset.
+ |_*Read in VSDWEL (structures owned by households) for 1995-2017.
+ |_SMPL 1995.0 2017.0
+
+ |_READ VSDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       23 OBSERVATIONS STARTING AT OBS      31
+
+
+ |_*Get the deflator PSDWEL using the series for all dwellings.
+ |_READ VSDWELA / BYVAR
+ ...NOTE..    1 VARIABLES AND       23 OBSERVATIONS STARTING AT OBS      31
+
+
+ |_READ QSDWELA / BYVAR
+ ...NOTE..    1 VARIABLES AND       23 OBSERVATIONS STARTING AT OBS      31
+
+
+ |_GENR PSDWEL = VSDWELA/QSDWELA
+
+ |_*USing that deflator, we can get a volume series QSDWEL for dwellings owned by households.
+ |_GENR QSDWEL = VSDWEL/PSDWEL
+
+
+ |_*We will extend both series by splicing in value and volume series for all dwellings (not only those by households).
+ |_*This makes sense if we assume that the non-household dwellings are a fixed proportion of total dwellings. This seems to make s
+ | ense for the overlap (1&
+ |_*995-2017).
+ |_*Also non-household dwellings represent a small proportion of the total.
+ |_*First extend the value series VSDWEL.
+ |_*VSWDEL1 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.2) - editions from
+ |  October 2011 to March &
+ |_*2014.
+ |_SMPL 1990.0 1995.0
+
+ |_READ VSDWEL1 / BYVAR
+ ...NOTE..    1 VARIABLES AND        6 OBSERVATIONS STARTING AT OBS      26
+
+
+ |_GENR VSDWEL = VSDWEL1*(VSDWEL(31)/VSDWEL1(31))
+
+ |_*VSWDEL2 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.1.1) - editions pr
+ | ior to 2011.
+ |_SMPL 1980.0 1990.0
+
+ |_READ VSDWEL2 / BYVAR
+ ...NOTE..    1 VARIABLES AND       11 OBSERVATIONS STARTING AT OBS      16
+
+
+ |_GENR VSDWEL = VSDWEL2*(VSDWEL(26)/VSDWEL2(26))
+
+ |_*VSWDEL3 is from Pagliano & Rossi (1992), Table 21.
+ |_SMPL 1965.0 1980.0
+
+ |_READ VSDWEL3 / BYVAR
+ ...NOTE..    1 VARIABLES AND       16 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR VSDWEL = VSDWEL3*(VSDWEL(16)/VSDWEL3(16))
+
+
+ |_*Do the same with the volume series QSDWEL.
+ |_*QSWDEL1 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.2) - editions from
+ |  October 2011 to March &
+ |_*2014.
+ |_SMPL 1990.0 1995.0
+
+ |_READ QSDWEL1 / BYVAR
+ ...NOTE..    1 VARIABLES AND        6 OBSERVATIONS STARTING AT OBS      26
+
+
+ |_GENR QSDWEL = QSDWEL1*(QSDWEL(31)/QSDWEL1(31))
+
+ |_*QSWDEL2 is from IStat, Stocks of fixed assets, consumption of fixed capital by asset and industry (Nace Rev.1.1) - editions pr
+ | ior to 2011.
+ |_SMPL 1980.0 1990.0
+
+ |_READ QSDWEL2 / BYVAR
+ ...NOTE..    1 VARIABLES AND       11 OBSERVATIONS STARTING AT OBS      16
+
+
+ |_GENR QSDWEL = QSDWEL2*(QSDWEL(26)/QSDWEL2(26))
+
+ |_*For 1965-1980, we need to deflate the Pagliano & Rossi (1992) series by the capital deflator in Table 9.
+ |_*We do not get a smooth series for QS using the deflator, so we fit a quadratic. Looks good with the official series.
+ |_SMPL 1965.0 1980.0
+
+ |_READ PSDWEL3 / BYVAR
+ ...NOTE..    1 VARIABLES AND       16 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR QSDWEL3 = VSDWEL3/PSDWEL3
+
+ |_OLS QSDWEL3 T T2 / PREDICT=QSDWEL3L
+
+ REQUIRED MEMORY IS PAR=       9 CURRENT PAR=  112400
+  OLS ESTIMATION
+        16 OBSERVATIONS     DEPENDENT VARIABLE= QSDWEL3
+ ...NOTE..SAMPLE RANGE SET TO:      1,     16
+
+  R-SQUARE =   0.9174     R-SQUARE ADJUSTED =   0.9047
+ VARIANCE OF THE ESTIMATE-SIGMA**2 =   2622.1
+ STANDARD ERROR OF THE ESTIMATE-SIGMA =   51.206
+ SUM OF SQUARED ERRORS-SSE=   34087.
+ MEAN OF DEPENDENT VARIABLE =   663.20
+ LOG OF THE LIKELIHOOD FUNCTION = -84.0158
+
+ MODEL SELECTION TESTS - SEE JUDGE ET AL. (1985,P.242)
+  AKAIKE (1969) FINAL PREDICTION ERROR - FPE =      3113.7
+     (FPE IS ALSO KNOWN AS AMEMIYA PREDICTION CRITERION - PC)
+  AKAIKE (1973) INFORMATION CRITERION - LOG AIC =   8.0391
+  SCHWARZ (1978) CRITERION - LOG SC =               8.1840
+ MODEL SELECTION TESTS - SEE RAMANATHAN (1998,P.165)
+  CRAVEN-WAHBA (1979)
+     GENERALIZED CROSS VALIDATION - GCV =           3227.2
+  HANNAN AND QUINN (1979) CRITERION =               3122.9
+  RICE (1984) CRITERION =                           3408.7
+  SHIBATA (1981) CRITERION =                        2929.4
+  SCHWARZ (1978) CRITERION - SC =                   3583.0
+  AKAIKE (1974) INFORMATION CRITERION - AIC =       3099.8
+
+                      ANALYSIS OF VARIANCE - FROM MEAN
+                       SS         DF             MS                 F
+ REGRESSION       0.37846E+06      2.       0.18923E+06            72.168
+ ERROR             34087.         13.        2622.1               P-VALUE
+ TOTAL            0.41255E+06     15.        27503.                 0.000
+
+                      ANALYSIS OF VARIANCE - FROM ZERO
+                       SS         DF             MS                 F
+ REGRESSION       0.74159E+07      3.       0.24720E+07           942.737
+ ERROR             34087.         13.        2622.1               P-VALUE
+ TOTAL            0.74499E+07     16.       0.46562E+06             0.000
+
+
+ VARIABLE   ESTIMATED  STANDARD   T-RATIO        PARTIAL STANDARDIZED ELASTICITY
+   NAME    COEFFICIENT   ERROR      13 DF   P-VALUE CORR. COEFFICIENT  AT MEANS
+ T          38.891      10.54       3.691     0.003 0.715     1.1165     0.4398
+ T2       -0.37080     0.6775     -0.5473     0.593-0.150    -0.1655    -0.0433
+ CONSTANT   400.26      34.06       11.75     0.000 0.956     0.0000     0.6035
+
+ DURBIN-WATSON = 1.4940    VON NEUMANN RATIO = 1.5936    RHO =  0.24641
+ RESIDUAL SUM =  0.88107E-12  RESIDUAL VARIANCE =   2622.1
+ SUM OF ABSOLUTE ERRORS=   604.86
+ R-SQUARE BETWEEN OBSERVED AND PREDICTED = 0.9174
+ RUNS TEST:    8 RUNS,    8 POS,    0 ZERO,    8 NEG  NORMAL STATISTIC = -0.5175
+ COEFFICIENT OF SKEWNESS =  -0.2204 WITH STANDARD DEVIATION OF 0.5643
+ COEFFICIENT OF EXCESS KURTOSIS =  -0.3744 WITH STANDARD DEVIATION OF 1.0908
+
+ JARQUE-BERA NORMALITY TEST- CHI-SQUARE(2 DF)=    0.3622 P-VALUE= 0.834
+
+      GOODNESS OF FIT TEST FOR NORMALITY OF RESIDUALS -  6 GROUPS
+ OBSERVED  0.0  2.0  6.0  6.0  2.0  0.0
+ EXPECTED  0.4  2.2  5.5  5.5  2.2  0.4
+ CHI-SQUARE =    0.8641 WITH  1 DEGREES OF FREEDOM, P-VALUE= 0.353
+
+ |_GENR QSDWEL = QSDWEL3L*(QSDWEL(16)/QSDWEL3L(16))
+
+
+ |_*Generate implicit prices.
+ |_SMPL 1965.0 2017.0
+
+ |_GENR PSDWEL = VSDWEL/QSDWEL
+
+
+ |_*Read in the BIS residential price index
+ |_SMPL 1965.0 2017.0
+
+ |_READ PDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       53 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR QDWEL = VDWEL/PDWEL
+
+
+ |_*Scale all prices to 1 in 1965.
+ |_SMPL 1965.0 2017.0
+
+ |_GENR CON=PDWEL(1)
+
+ |_GENR PDWEL=PDWEL/CON
+
+ |_GENR QDWEL=QDWEL*CON
+
+ |_GENR CON=PSDWEL(1)
+
+ |_GENR PSDWEL=PSDWEL/CON
+
+ |_GENR QSDWEL=QSDWEL*CON
+
+ |_GENR VLDWEL = VDWEl-VSDWEL
+
+ |_*Get PLBUILD and QLBUILD from following Fischer index.
+ |_SMPL 1965.0 2017.0
+
+ |_GENR QSDWEL=-QSDWEL
+
+ |_INDEX PDWEL QDWEL PSDWEL QSDWEL / CHAIN FISHER=PLDWEL QFISHER=QLDWEL
+
+ REQUIRED MEMORY IS PAR=      13 CURRENT PAR=  112400
+ BASE PERIOD IS OBSERVATION     1
+ ALL INDEXES ARE CHAINED
+ FISHER   WILL BE STORED AS VARIABLE: PLDWEL
+ QFISHER  WILL BE STORED AS VARIABLE: QLDWEL
+                     PRICE INDEX                          QUANTITY
+     DIVISIA PAASCHE LASPEYRES FISHER  DIVISIA    PAASCHE  LASPEYRES    FISHER
+   1  1.000  1.000  1.000  1.000   6.383       6.383       6.383       6.383
+   2  0.883  0.884  0.883  0.884   7.061       7.053       7.061       7.057
+   3  1.149  1.167  1.134  1.151   6.718       6.612       6.806       6.708
+   4  1.132  1.150  1.118  1.134   7.148       7.037       7.236       7.136
+   5  0.775  0.798  0.784  0.791   7.613       7.392       7.529       7.460
+   6  1.451  1.423  1.418  1.420   7.996       8.155       8.185       8.170
+   7  1.639  1.608  1.600  1.604   8.326       8.487       8.529       8.508
+   8  1.459  1.451  1.402  1.426   10.22       10.28       10.64       10.46
+   9  1.223  1.106  1.599  1.330   3.671       4.059       2.807       3.376
+  10  8.068  2.564  7.966  4.519   5.488       17.27       5.559       9.798
+  11  7.478  2.337  7.616  4.219   4.418       14.14       4.338       7.831
+  12  8.625  2.702  8.761  4.866   6.049       19.31       5.955       10.72
+  13  9.079  2.844  9.225  5.122   6.090       19.44       5.993       10.79
+  14 12.558  4.027 12.530  7.103   4.624       14.42       4.634       8.174
+  15 12.666  4.116 12.427  7.152   5.851       18.01       5.963       10.36
+  16 23.880  7.962 22.937 13.514   5.062       15.18       5.270       8.944
+  17 27.845  9.314 26.654 15.756   5.940       17.76       6.206       10.50
+  18 27.447  9.241 26.071 15.522   6.907       20.52       7.272       12.21
+  19 24.779  8.397 23.376 14.010   7.704       22.73       8.166       13.63
+  20 20.450  6.923 19.440 11.601   7.581       22.39       7.974       13.36
+  21 15.714  5.282 15.356  9.006   6.885       20.48       7.045       12.01
+  22 15.677  5.282 15.281  8.985   8.156       24.21       8.367       14.23
+  23 19.790  6.800 18.997 11.366   6.663       19.39       6.941       11.60
+  24 32.306 11.229 30.453 18.492   6.194       17.82       6.571       10.82
+  25 52.419 17.318 50.076 29.449   7.717       23.36       8.078       13.74
+  26 66.536 21.661 64.285 37.316   10.66       32.76       11.04       19.02
+  27 79.909 26.048 77.107 44.816   10.40       31.90       10.78       18.54
+  28 99.057 32.102 95.974 55.506   11.96       36.91       12.35       21.35
+  29100.010 32.409 96.904 56.041   12.01       37.07       12.40       21.44
+  30 93.793 30.334 91.104 52.569   11.17       34.54       11.50       19.93
+  31 96.539 31.222 93.771 54.108   11.32       35.00       11.65       20.20
+  32101.026 32.683 98.101 56.623   10.76       33.27       11.08       19.20
+  33102.643 33.205 99.672 57.530   10.90       33.68       11.22       19.44
+  34100.130 32.375 97.290 56.123   10.54       32.59       10.84       18.80
+  35101.723 32.891 98.835 57.015   10.18       31.49       10.48       18.17
+  36108.390 35.038105.337 60.752   10.65       32.94       10.96       19.00
+  37123.864 40.027120.385 69.416   10.89       33.69       11.20       19.43
+  38145.303 46.904141.317 81.414   11.37       35.21       11.69       20.28
+  39159.471 51.451155.162 89.349   11.87       36.79       12.20       21.19
+  40176.099 56.809171.356 98.664   12.15       37.66       12.48       21.68
+  41191.237 61.686186.105107.145   12.53       38.83       12.87       22.36
+  42206.120 66.442200.712115.480   13.59       42.16       13.96       24.26
+  43215.829 69.570210.171120.920   14.15       43.90       14.53       25.26
+  44212.668 68.587206.978119.147   15.21       47.16       15.63       27.15
+  45209.292 67.499203.690117.256   15.49       48.04       15.92       27.65
+  46207.281 66.852201.728116.129   15.80       49.00       16.24       28.21
+  47203.976 65.789198.505114.278   16.08       49.85       16.52       28.70
+  48184.355 59.541179.156103.282   17.13       53.05       17.63       30.58
+  49165.395 53.489160.505 92.656   18.24       56.39       18.79       32.56
+  50150.608 48.761145.983 84.370   19.31       59.64       19.92       34.47
+  51144.028 46.632139.604 80.684   19.42       59.98       20.03       34.66
+  52144.466 46.775140.026 80.930   18.87       58.27       19.46       33.68
+  53141.064 45.673136.731 79.024   18.96       58.55       19.56       33.84
+
+ |_GENR QSDWEL=-QSDWEL
+
+ |_GENR VLDWEL=QLDWEL*PLDWEL
+
+
+ |_GRAPH(VLDWEL,VDWEL,VSDWEL,YEAR)
+
+ REQUIRED MEMORY IS PAR=      11 CURRENT PAR=  112400
+        53 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+ |_GRAPH(QLDWEL,QDWEL,QSDWEL,YEAR)
+
+ REQUIRED MEMORY IS PAR=      11 CURRENT PAR=  112400
+        53 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+ |_*Weird observation in 1973 (value seems to not increase enough relative to price). Apart from that looks pretty good.
+ |_*Could not find agricultural land data for before 1995.
+
+ |_PRINT YEAR VLDWEL QLDWEL PLDWEL
+       YEAR           VLDWEL         QLDWEL         PLDWEL
+    1965.100       6.383003       6.383003       1.000000
+    1966.100       6.238034       7.057401      0.8838995
+    1967.100       7.718250       6.707988       1.150606
+    1968.100       8.089737       7.135750       1.133691
+    1969.100       5.898744       7.460009      0.7907153
+    1970.100       11.60485       8.170145       1.420397
+    1971.100       13.64331       8.507694       1.603644
+    1972.100       14.91750       10.46149       1.425943
+    1973.100       4.488863       3.375509       1.329833
+    1974.100       44.27786       9.797632       4.519241
+    1975.100       33.03982       7.831432       4.218874
+    1976.100       52.17368       10.72269       4.865729
+    1977.100       55.28963       10.79433       5.122100
+    1978.100       58.06436       8.174430       7.103169
+    1979.100       74.10258       10.36164       7.151625
+    1980.100       120.8721       8.944199       13.51402
+    1981.100       165.4013       10.49793       15.75561
+    1982.100       189.5840       12.21427       15.52151
+    1983.100       190.8935       13.62517       14.01036
+    1984.100       155.0209       13.36251       11.60118
+    1985.100       108.1926       12.01306       9.006250
+    1986.100       127.8632       14.23142       8.984568
+    1987.100       131.8609       11.60128       11.36607
+    1988.100       200.1027       10.82109       18.49191
+    1989.100       404.5343       13.73688       29.44879
+    1990.100       709.5947       19.01603       37.31561
+    1991.100       830.8892       18.53995       44.81615
+    1992.100       1184.922       21.34744       55.50649
+    1993.100       1201.434       21.43853       56.04088
+    1994.100       1047.868       19.93307       52.56931
+    1995.100       1092.820       20.19695       54.10817
+    1996.100       1087.326       19.20274       56.62347
+    1997.100       1118.323       19.43909       57.52958
+    1998.100       1055.072       18.79938       56.12270
+    1999.100       1035.842       18.16777       57.01536
+    2000.100       1154.111       18.99712       60.75193
+    2001.100       1348.539       19.42679       69.41649
+    2002.100       1651.432       20.28429       81.41433
+    2003.100       1892.926       21.18570       89.34927
+    2004.100       2139.307       21.68275       98.66401
+    2005.100       2395.481       22.35743       107.1448
+    2006.100       2801.396       24.25866       115.4803
+    2007.100       3053.986       25.25634       120.9196
+    2008.100       3234.756       27.14933       119.1468
+    2009.100       3242.334       27.65186       117.2556
+    2010.100       3275.483       28.20552       116.1291
+    2011.100       3279.481       28.69742       114.2779
+    2012.100       3158.864       30.58487       103.2819
+    2013.100       3016.490       32.55565       92.65643
+    2014.100       2908.195       34.46953       84.37002
+    2015.100       2796.802       34.66347       80.68440
+    2016.100       2725.497       33.67720       80.93005
+    2017.100       2674.178       33.83988       79.02444
+
+
+ |_STOP
+

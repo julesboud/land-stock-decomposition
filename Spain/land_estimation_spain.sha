@@ -1,0 +1,149 @@
+
+
+**********************************************************************
+******************************* Spain *******************************
+**********************************************************************
+*This Shazam file estimates land underlying dwellings from 1970 to 2014.
+*I am using housing value data from Artola Blanco, Bauluz & Martinez-Toledano (2017). They only have data up to 2014. I emailed the author
+*(Artola-Blanco), and he said they will update the data when the paper gets published soon.
+
+*Artola Blanco, Bauluz & Martinez-Toledano (2017) have mid-year data so we have to take the average of two observations to get end-year estimates.
+*That means we lose an observation point (ends in 2013 instead of 2014.
+
+*V indicates a value series in local currency;
+*Q indicates a constant prices series, which we interpret as a quantity series.
+*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-period market
+*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+*There are 45 years covering 1970 to 2014.
+SMPL 1 45
+TIME 1970 1 YEAR
+
+SMPL 1970.0 2014.0
+GENR CON = 0
+GENR CHECK=0
+GENR T=TIME(-1)
+GENR T2=T*T
+
+*I will read in all the variables from both datasets and then merge them.
+*Initialize variables
+SMPL 1970.0 2014.0
+GENR PDWEL=0
+GENR VDWEL=0
+GENR VSDWEL=0
+GENR QSDWEL=0
+GENR PSDWEL=0
+
+GENR VLAGRI=0
+GENR QLAGRI=0
+GENR PLAGRI=0
+
+*Now enter the available data series. See the accompanying Excel files for details on the data.
+
+*Read in the Artola Blanco, Bauluz & Martinez-Toledano (2017) private housing series (including land). 
+SMPL 1970.0 2014.0
+READ VDWEL / BYVAR
+20.1218	23.8512	29.1441	38.5261	52.5727	73.7055	84.1696	103.2603	132.9439	163.2029	178.7458	
+197.6954	214.7523	234.3662	260.4772	294.5170	352.9894	439.6165	557.9094	698.2653	819.3390	
+956.6120	977.9084	999.8146	1037.2987	1099.7002	1146.8765	1201.8361	1291.2553	1461.2106	1706.3485	
+1999.6625	2330.6229	2751.3971	3279.9538	3855.6489	4316.6177	4749.6369	4943.7265	4568.6332	4625.4005	
+4537.0420	4141.2972	3884.5290	3793.7175
+*Transform to end-of-year series.
+SMPL 1970.0 2013.0
+GENR VDWEL = (VDWEL + LAG(VDWEL,-1))/2
+
+*Read in price of housing index, PDWEL, from BIS. We will use it later to get a volume measure of housing.
+SMPL 1970.0 2014.0
+READ PDWEL / BYVAR
+1.52	1.64	1.77	2.23	2.87	3.07	3.77	5.42	6.63	6.69	6.97	7.13	7.74	9.15	9.74	10.81	13.56	18.34	22.46	
+27.41	30.82	36.17	33.48	34.01	34.11	35.43	35.91	36.72	39.21	42.94	46.25	51.43	60.34	71.48	83.80	94.47	105.34	
+111.35	105.53	100.91	99.49	86.81	75.74	70.98	72.22
+
+*Input the dwellings capital series from EU KLEMS, which we will use to get an implicit deflator for the dwellings series from  Artola Blanco, Bauluz & Martinez-Toledano (2017).
+SMPL 1970.0 2014.0
+READ VSDWELK / BYVAR
+18.45	21.10	23.42	29.57	39.24	50.88	62.82	81.73	104.14	132.71	158.88	181.39	207.41	227.34	247.82	262.61	297.02	323.98	359.63	
+392.32	434.06	471.47	498.64	527.55	549.83	584.16	608.52	634.93	658.54	714.42	800.08	880.38	975.77	1085.22	1222.33	1369.85	
+1528.20	1647.56	1728.10	1676.58	1651.00	1580.00	1471.26	1359.59	1355.47
+READ QSDWELK / BYVAR
+559.95	583.81	608.24	636.90	668.30	697.60	723.92	748.79	770.87	789.22	804.92	819.61	833.42	845.52	855.40	864.20	873.58	
+884.54	898.59	915.24	933.40	951.37	966.98	980.31	992.55	1005.92	1022.01	1040.10	1061.19	1087.60	1123.57	1168.12	1216.40	1269.41	
+1326.72	1387.84	1453.86	1521.95	1582.94	1625.57	1651.00	1665.69	1671.60	1671.07	1669.24	1669.94
+GENR PSDWEL=VSDWELK/QSDWELK
+
+*Now read in the Artola Blanco, Bauluz & Martinez-Toledano (2017) private dwellings value series. 
+*We will later deflate it using the KLEMS deflator from above.
+SMPL 1970.0 2014.0
+READ VSDWEL / BYVAR
+8.9907	10.2072	11.8527	14.8619	19.4994	24.2304	31.0812	40.4172	52.5734	66.6696	79.4650	
+90.3906	102.3020	114.6102	125.2491	136.5839	151.6137	168.9025	188.2235	210.7718	
+236.5912	262.4350	286.9674	311.2054	335.8310	362.7392	391.0310	418.8735	452.3212	
+502.8217	572.2064	651.6068	738.8438	842.4313	964.3881	1100.8892	1229.9119	1360.0441	
+1435.7199	1443.5064	1418.2831	1366.7744	1287.7043	1219.0368	1209.2909
+*Transform to end-of-year series.
+SMPL 1970.0 2013.0
+GENR VSDWEL = (VSDWEL + LAG(VSDWEL,-1))/2
+
+*Finally, read in our agricultural data. We want to remove government land from it.
+SMPL 1970.0 2014.0
+READ VLAGRIN / BYVAR
+14.09	15.02	16.40	18.20	20.91	22.27	23.64	33.96	44.28	54.60	56.58	60.47	64.43	70.73	77.31	85.75	95.79	108.70	121.95	129.43	124.73	116.25	
+101.78	100.36	106.44	111.71	119.93	136.32	158.36	175.66	186.28	192.11	203.02	215.42	226.04	244.06	256.60	268.61	266.85	252.93	
+242.58	244.19	237.51	234.17	238.36
+READ VLAGRIG / BYVAR
+3.3055	3.5725	3.9526	4.4549	5.1938	5.6141	6.0443	8.8073	11.6456	14.5594	15.2942	16.5665	17.8869	19.3867	20.9215	22.9048	
+25.2509	28.2729	31.2917	32.7587	31.5523	29.3926	25.7203	25.3466	26.8688	28.1851	30.2415	34.3582	39.8907	44.2256	46.8659	48.2990	
+51.0066	54.0830	56.7105	61.1871	64.2864	67.2484	66.7594	63.2314	60.6453	61.0463	59.3783	58.5418	59.5906
+GENR VLAGRI = VLAGRIN-VLAGRIG
+*Transform to end-of-year series.
+SMPL 1970.0 2013.0
+GENR VLAGRI = (VLAGRI + LAG(VLAGRI,-1))/2
+
+*Read in the agricultural surface from OECD.
+READ QLAGRI / BYVAR
+205190.00	211840.00	211680.00	209790.00	208850.00	208330.00	206590.00	206040.00	205780.00	205280.00	204990.00	204880.00	204870.00	205080.00	
+205120.00	204160.00	204200.00	203900.00	203680.00	203240.00	201720.00	200890.00	199470.00	196570.00	194960.00	187530.00	191440.00	190590.00	
+185160.00	183280.00	183040.00	180440.00	178860.00	179810.00	179570.00	178440.00	175780.00	173960.00	172720.00	172160.00	172210.00	169920.00	
+175390.00	171330.00	171880.00
+
+*Generate implicit prices/volumes
+SMPL 1970.0 2013.0
+GENR QSDWEL = VSDWEL/PSDWEL
+GENR QDWEL = VDWEL/PDWEL
+GENR PLAGRI = VLAGRI/QLAGRI
+
+*Scale all prices to 1 in 1970.
+SMPL 1970.0 2013.0
+GENR CON=PDWEL(1)
+GENR PDWEL=PDWEL/CON
+GENR QDWEL=QDWEL*CON
+GENR CON=PSDWEL(1)
+GENR PSDWEL=PSDWEL/CON
+GENR QSDWEL=QSDWEL*CON
+GENR CON=PLAGRI(1)
+GENR PLAGRI=PLAGRI/CON
+GENR QLAGRI=QLAGRI*CON
+
+GENR VLDWEL = VDWEL-VSDWEL
+*Get PLDWEL and QLDWEL from following Fischer index.
+SMPL 1970.0 2013.0
+GENR QSDWEL=-QSDWEL
+INDEX PDWEL QDWEL PSDWEL QSDWEL / CHAIN FISHER=PLDWEL QFISHER=QLDWEL
+GENR QSDWEL=-QSDWEL
+GENR VLDWEL=QLDWEL*PLDWEL
+
+*Aggregate dwellings and agricultural land.
+INDEX PLDWEL QLDWEL PLAGRI QLAGRI / CHAIN FISHER=PL QFISHER=QL
+GENR VL=PL*QL
+
+GRAPH(VLDWEL,VDWEL,VSDWEL,VLAGRI,YEAR)
+GRAPH(PLDWEL,PDWEL,PSDWEL,PLAGRI,YEAR)
+GRAPH(QLDWEL,QDWEL,QSDWEL,QLAGRI,YEAR)
+GRAPH(QL,QLAGRI,QLDWEL,YEAR)
+
+PRINT YEAR VLDWEL QLDWEL PLDWEL
+PRINT YEAR VLAGRI QLAGRI PLAGRI
+PRINT YEAR VL PL QL
+
+STOP

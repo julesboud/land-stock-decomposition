@@ -1,0 +1,484 @@
+ Welcome to SHAZAM (Double Precision) v11.1 -  APR 2015 WIN-NT   PAR=112400
+ ...NOTE..CURRENT WORKING DIRECTORY IS: C:\Users\jules\Desktop\Diewert RA\Australia
+
+
+
+
+ |_**********************************************************************
+ |_***************************** Australia ******************************
+ |_**********************************************************************
+ |_*This Shazam file estimates land underlying dwellings from 1960 to 2019.
+ |_*We can't extend commercial land data back to 1960.
+ |_*Surprisingly, I cannot find any farmland price data before 1989, so I cannot extend agricultural land back to 1960.
+ |_*Finding such an index would be the low-lying fruit to improve the Australian data
+
+ |_*V indicates a value series in local currency;
+ |_*Q indicates a constant prices series, which we interpret as a quantity series. Except when noted, the base year for the consta
+ | nt price series
+ |_*is 2014.
+ |_*P indicates a price series (either derived implicitely or explicitely assembled as a price index).
+ |_*The data we use are stocks of assets. When possible we try to uniformely measure an asset for a given year as the end-of-perio
+ | d market
+ |_*value for V, end-of-period quantity for Q, and end of period price value for P.
+
+ |_*Australia's National Accounts, in constrast to the NAs of other countries, accounts assets as of June 30th instead of December
+ |  31st.
+ |_*Thus the asset values are mid-year rather than end-year estimates.
+
+
+ |_*There are 60 years covering 1960 to 2019.
+ |_SMPL 1 60
+
+ |_TIME 1960 1 YEAR
+  VARIABLE YEAR     CREATED WITH    60 OBSERVATIONS
+
+
+ |_SMPL 1960.0 2019.0
+
+ |_GENR CON = 0
+
+ |_GENR CHECK=0
+
+
+ |_*Dwellings data goes back to 1960, but agricultural and commercial land can only be measured from 1989.
+ |_*Initialize variables
+ |_SMPL 1960.0 2019.0
+
+ |_GENR PDWEL=0
+
+ |_GENR PCOMM=0
+
+ |_GENR VDWEL=0
+
+
+ |_GENR VSDWEL=0
+
+ |_GENR VSCOMM=0
+
+ |_GENR QSDWEL=0
+
+ |_GENR QSCOMM=0
+
+ |_GENR QSDWELO=0
+
+ |_GENR QSCOMMO=0
+
+
+ |_GENR VLDWEL=0
+
+ |_GENR VLCOMM=0
+
+ |_GENR VLAGRI=0
+
+ |_GENR QLAGRI=0
+
+ |_GENR PLAGRI=0
+
+
+ |_GENR VIDWEL = 0
+
+ |_GENR VICOMM = 0
+
+ |_GENR QIDWEL = 0
+
+ |_GENR QICOMM = 0
+
+
+ |_*Now enter the available data series. See the accompanying Excel files for details on the data.
+
+ |_*PDWEL is a residential property price index from BIS. It runs from 1970 to 2018.
+ |_SMPL 1970.0 2019.0
+
+ |_READ PDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       50 OBSERVATIONS STARTING AT OBS      11
+
+
+
+ |_*VSDWEL is the current net value of housing structures in the national balance sheet. We have all balance sheet information fro
+ | m 1960 onwards.
+ |_SMPL 1960.0 2019.0
+
+ |_READ VSDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       60 OBSERVATIONS STARTING AT OBS       1
+
+
+
+ |_*VSCOMM is the current net value of non-residential structures in the national balance sheet.
+ |_SMPL 1960.0 2019.0
+
+ |_READ VSCOMM / BYVAR
+ ...NOTE..    1 VARIABLES AND       60 OBSERVATIONS STARTING AT OBS       1
+
+
+
+ |_*QSDWEL is the constant net value of housing structures in the national balance sheet.
+ |_SMPL 1960.0 2019.0
+
+ |_READ QSDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       60 OBSERVATIONS STARTING AT OBS       1
+
+
+
+ |_*QSCOMM is the constant net value of non-residential structures in the national balance sheet.
+ |_SMPL 1960.0 2019.0
+
+ |_READ QSCOMM / BYVAR
+ ...NOTE..    1 VARIABLES AND       60 OBSERVATIONS STARTING AT OBS       1
+
+
+
+ |_*VLDWEL is the current price net value of land underlying dwellings in the national balance sheet.
+ |_SMPL 1989.0 2019.0
+
+ |_READ VLDWEL / BYVAR
+ ...NOTE..    1 VARIABLES AND       31 OBSERVATIONS STARTING AT OBS      30
+
+
+
+ |_*VLCOMM is the current price net value of land underlying non-residential buildings in the national balance sheet.
+ |_SMPL 1989.0 2019.0
+
+ |_READ VLCOMM / BYVAR
+ ...NOTE..    1 VARIABLES AND       31 OBSERVATIONS STARTING AT OBS      30
+
+
+
+ |_*VLAGRI is the current price net value of land under cultivation in the national balance sheet.
+ |_SMPL 1989.0 2019.0
+
+ |_READ VLAGRI / BYVAR
+ ...NOTE..    1 VARIABLES AND       31 OBSERVATIONS STARTING AT OBS      30
+
+
+
+ |_*QLAGRI is the proportion of national land used for agriculture (World Bank).
+ |_SMPL 1961.0 2016.0
+
+ |_READ QLAGRI / BYVAR
+ ...NOTE..    1 VARIABLES AND       56 OBSERVATIONS STARTING AT OBS       2
+
+
+ |_*Also try with the OECD measure
+ |_*SMPL 1961.0 2016.0
+ |_*READ QLAGRI / BYVAR
+ |_*303.45 322.68 332.01 355.49 371.36 397.84 414.48 415.61 416.73 417.87 412.83 407.87
+ |_*403.87 422.87 423.87 422.33 412.41 426.70 440.87 441.86 431.71 465.31 449.75 472.39
+ |_*473.10 469.75 471.06 472.23 478.77 480.81 458.74 473.78 464.86 475.00 403.00 365.00
+ |_*401.00 443.00 458.00 476.00 501.27 481.24 473.75 480.80 497.42 480.65 445.30 443.74
+ |_*460.11 429.68 480.78 474.93 466.11 473.07 464.56 463.78
+
+ |_*First need to extrapolate QLAGRI for 2017,2018 and 2019. Take the growth rate of the previous five years.
+ |_GENR CON = (QLAGRI(57)/QLAGRI(52))**(1/5)-1
+
+ |_SMPL 2017.0 2019.0
+
+ |_GENR QLAGRI = LAG(QLAGRI)*(1+CON(1))
+ ...NOTE..LAG VALUE IN UNDEFINED OBSERVATIONS SET TO ZERO
+
+ |_*We also retropolate similarily for 1960
+ |_GENR CON = (QLAGRI(7)/QLAGRI(2))**(1/5)-1
+
+ |_SMPL 1960.0 1960.0
+
+ |_GENR QLAGRI = LAG(QLAGRI,-1)/(1+CON(1))
+ ...NOTE..LAG VALUE IN UNDEFINED OBSERVATIONS SET TO ZERO
+
+
+
+ |_**First, we have enough data to estimate only land under dwellings from 1960.
+
+ |_*For 1960-1988, we have an aggregate value of housing (structures and land) from the Reserve Bank of Australia (via Goldbloom &
+ |  Craston (2).
+ |_SMPL 1960.0 1989.0
+
+ |_READ VDWEL2 / BYVAR
+ ...NOTE..    1 VARIABLES AND       30 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_*The value for 1989 is very close to the sum of our dwellings and residential land series for 1989 onwards from the ABS (367.0+
+ | 410.5=777.5).
+ |_*This is reassuring. But we will still splice in to remove the slight discrepancy.
+ |_SMPL 1989.0 2019.0
+
+ |_GENR VDWEL = VSDWEL + VLDWEL
+
+ |_SMPL 1960.0 1989.0
+
+ |_GENR VDWEL = VDWEL2*VDWEL(30)/VDWEL2(30)
+
+
+ |_*Finally, get VLDWEL for 1960 to 1988
+ |_SMPL 1960.0 1988.0
+
+ |_GENR VLDWEL = VDWEL-VSDWEL
+
+
+ |_*The BIS price index starts only from 1970, so we extend it using a series from Stapledon (2007).
+ |_SMPL 1960.0 1970.0
+
+ |_READ PDWEL2 / BYVAR
+ ...NOTE..    1 VARIABLES AND       11 OBSERVATIONS STARTING AT OBS       1
+
+
+ |_GENR PDWEL = PDWEL2*PDWEL(11)/PDWEL2(11)
+
+
+ |_SMPL 1960.0 2019.0
+
+ |_FORMAT(F12.0,5F11.3)
+
+ |_PRINT YEAR VLDWEL VDWEL
+       YEAR           VLDWEL         VDWEL
+    1960.100       16.34923       26.22923
+    1961.100       17.85376       28.51476
+    1962.100       19.61330       30.80030
+    1963.100       19.74298       31.67098
+    1964.100       22.97754       35.91554
+    1965.100       24.68508       38.85408
+    1966.100       26.79597       42.22797
+    1967.100       26.65315       43.42515
+    1968.100       28.50404       46.79904
+    1969.100       32.17062       52.34962
+    1970.100       38.40258       60.94758
+    1971.100       44.92222       70.41622
+    1972.100       50.97988       80.53788
+    1973.100       61.19763       97.84263
+    1974.100       80.79059       128.2076
+    1975.100       86.23367       144.6417
+    1976.100       96.44899       166.1910
+    1977.100       104.4109       184.6929
+    1978.100       108.6258       197.3178
+    1979.100       117.0746       215.2756
+    1980.100       142.6683       256.3063
+    1981.100       171.4659       306.6969
+    1982.100       169.5021       327.7021
+    1983.100       172.7017       348.3807
+    1984.100       199.5699       393.1119
+    1985.100       219.6067       437.4077
+    1986.100       216.9779       460.3719
+    1987.100       215.5474       483.1184
+    1988.100       302.9597       612.1967
+    1989.100       410.5000       777.5170
+    1990.100       432.8000       841.5320
+    1991.100       444.4000       872.9640
+    1992.100       466.6000       908.7120
+    1993.100       483.0000       945.6360
+    1994.100       545.0000       1035.677
+    1995.100       565.9000       1085.539
+    1996.100       584.9000       1124.522
+    1997.100       700.3000       1256.825
+    1998.100       748.4000       1330.544
+    1999.100       832.7000       1457.449
+    2000.100       951.0000       1628.822
+    2001.100       1038.800       1814.209
+    2002.100       1299.300       2120.014
+    2003.100       1592.300       2488.750
+    2004.100       1820.700       2811.946
+    2005.100       1939.700       3020.120
+    2006.100       2183.200       3341.153
+    2007.100       2499.600       3739.060
+    2008.100       2602.600       3927.812
+    2009.100       2414.100       3804.128
+    2010.100       3067.100       4518.822
+    2011.100       3045.600       4556.719
+    2012.100       2901.400       4457.022
+    2013.100       3073.300       4688.283
+    2014.100       3429.300       5128.450
+    2015.100       3945.200       5738.434
+    2016.100       4169.600       6055.437
+    2017.100       4783.700       6771.334
+    2018.100       4833.900       6921.015
+    2019.100       4460.100       6610.624
+
+
+ |_*Now generate the implicit prices that correspond to the above data.
+ |_SMPL 1960.0 2019.0
+
+ |_GENR PSDWEL=VSDWEL/QSDWEL
+
+ |_*Now rescale prices to be 1 in 1960
+ |_GENR CON=PDWEL(1)
+
+ |_GENR PDWEL=PDWEL/CON
+
+ |_GENR CON=PSDWEL(1)
+
+ |_GENR PSDWEL=PSDWEL/CON
+
+ |_GENR QSDWEL=QSDWEL*CON
+
+
+ |_*We can now get a measure for overall QDWEL, since VLDWEL = PDWEL*QDWEL - PSDWEL*QSDWEL
+ |_GENR VSDWEL = PSDWEL*QSDWEL
+
+ |_GENR VDWEL = VSDWEL+VLDWEL
+
+ |_GENR QDWEL = VDWEL/PDWEL
+
+ |_*Get PLDWEL and QLDWEL from following Fischer index
+ |_GENR QSDWEL=-QSDWEL
+
+ |_INDEX PDWEL QDWEL PSDWEL QSDWEL / CHAIN FISHER=PLDWEL QFISHER=QLDWEL
+
+ REQUIRED MEMORY IS PAR=      17 CURRENT PAR=  112400
+ BASE PERIOD IS OBSERVATION     1
+ ALL INDEXES ARE CHAINED
+ FISHER   WILL BE STORED AS VARIABLE: PLDWEL
+ QFISHER  WILL BE STORED AS VARIABLE: QLDWEL
+                     PRICE INDEX                          QUANTITY
+     DIVISIA PAASCHE LASPEYRES FISHER  DIVISIA    PAASCHE  LASPEYRES    FISHER
+   1  1.000  1.000  1.000  1.000   16.35       16.35       16.35       16.35
+   2  0.845  0.850  0.839  0.845   21.13       20.99       21.29       21.14
+   3  1.001  1.012  0.990  1.001   19.59       19.39       19.81       19.60
+   4  1.196  1.218  1.175  1.196   16.51       16.21       16.80       16.50
+   5  1.258  1.281  1.237  1.258   18.26       17.94       18.58       18.26
+   6  1.321  1.345  1.298  1.321   18.69       18.36       19.02       18.68
+   7  1.375  1.400  1.352  1.376   19.48       19.14       19.83       19.48
+   8  1.434  1.460  1.409  1.434   18.59       18.25       18.92       18.58
+   9  1.575  1.606  1.546  1.576   18.09       17.75       18.44       18.09
+  10  1.759  1.794  1.725  1.759   18.29       17.93       18.65       18.29
+  11  2.006  2.047  1.967  2.007   19.14       18.76       19.52       19.14
+  12  2.301  2.350  2.255  2.302   19.52       19.12       19.92       19.52
+  13  2.591  2.647  2.538  2.592   19.68       19.26       20.09       19.67
+  14  3.083  3.149  3.019  3.083   19.85       19.43       20.27       19.85
+  15  4.024  4.114  3.939  4.025   20.08       19.64       20.51       20.07
+  16  4.236  4.329  4.150  4.238   20.36       19.92       20.78       20.35
+  17  4.730  4.833  4.634  4.732   20.39       19.96       20.81       20.38
+  18  5.115  5.226  5.012  5.117   20.41       19.98       20.83       20.40
+  19  5.342  5.457  5.234  5.344   20.34       19.91       20.76       20.33
+  20  6.478  6.656  6.314  6.483   18.07       17.59       18.54       18.06
+  21  7.358  7.559  7.173  7.364   19.39       18.87       19.89       19.37
+  22  8.921  9.176  8.688  8.929   19.22       18.69       19.74       19.20
+  23  8.892  9.134  8.674  8.901   19.06       18.56       19.54       19.04
+  24  8.966  9.207  8.750  8.975   19.26       18.76       19.74       19.24
+  25 10.199 10.478  9.950 10.210   19.57       19.05       20.06       19.55
+  26 11.512 11.836 11.222 11.525   19.08       18.55       19.57       19.05
+  27 12.739 13.112 12.404 12.753   17.03       16.55       17.49       17.01
+  28 11.970 12.332 11.647 11.984   18.01       17.48       18.51       17.99
+  29 14.828 15.234 14.460 14.842   20.43       19.89       20.95       20.41
+  30 22.885 23.840 22.061 22.933   17.94       17.22       18.61       17.90
+  31 22.137 23.089 21.312 22.183   19.55       18.75       20.31       19.51
+  32 22.071 23.020 21.248 22.116   20.14       19.31       20.91       20.09
+  33 23.138 24.139 22.270 23.186   20.17       19.33       20.95       20.12
+  34 24.069 25.117 23.161 24.119   20.07       19.23       20.85       20.03
+  35 25.100 26.187 24.157 25.152   21.71       20.81       22.56       21.67
+  36 25.220 26.313 24.273 25.272   22.44       21.51       23.31       22.39
+  37 25.465 26.568 24.508 25.517   22.97       22.02       23.87       22.92
+  38 26.662 27.788 25.685 26.716   26.27       25.20       27.26       26.21
+  39 30.580 31.965 29.383 30.647   24.47       23.41       25.47       24.42
+  40 32.838 34.324 31.553 32.909   25.36       24.26       26.39       25.30
+  41 37.332 39.046 35.850 37.414   25.47       24.36       26.53       25.42
+  42 39.370 41.184 37.800 39.456   26.39       25.22       27.48       26.33
+  43 52.542 55.236 50.204 52.660   24.73       23.52       25.88       24.67
+  44 65.163 68.593 62.179 65.307   24.44       23.21       25.61       24.38
+  45 71.160 74.903 67.905 71.318   25.59       24.31       26.81       25.53
+  46 71.511 75.289 68.223 71.669   27.12       25.76       28.43       27.06
+  47 77.183 81.254 73.641 77.354   28.29       26.87       29.65       28.22
+  48 86.227 90.772 82.269 86.416   28.99       27.54       30.38       28.93
+  49 93.392 98.353 89.072 93.598   27.87       26.46       29.22       27.81
+  50 92.342 97.193 88.123 92.547   26.14       24.84       27.39       26.09
+  51113.869119.781108.668114.090   26.94       25.61       28.22       26.88
+  52109.135114.818104.135109.346   27.91       26.53       29.25       27.85
+  53105.878111.365101.054106.084   27.40       26.05       28.71       27.35
+  54113.222119.113108.043113.443   27.14       25.80       28.45       27.09
+  55128.752135.529122.791129.003   26.64       25.30       27.93       26.58
+  56145.438153.095138.698145.718   27.13       25.77       28.44       27.07
+  57152.221160.241145.161152.514   27.39       26.02       28.72       27.34
+  58172.635181.758164.598172.965   27.71       26.32       29.06       27.66
+  59169.179178.130161.292169.502   28.57       27.14       29.97       28.52
+  60149.221157.206142.196149.513   29.89       28.37       31.37       29.83
+
+ |_GENR QSDWEL=-QSDWEL
+
+
+ |_GRAPH(VSDWEL,VLDWEL,VDWEL,YEAR)
+
+ REQUIRED MEMORY IS PAR=      15 CURRENT PAR=  112400
+        60 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+ |_GRAPH(PSDWEL,PLDWEL,PDWEL,YEAR)
+
+ REQUIRED MEMORY IS PAR=      15 CURRENT PAR=  112400
+        60 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+ |_GRAPH(QSDWEL,QLDWEL,QDWEL,YEAR)
+
+ REQUIRED MEMORY IS PAR=      15 CURRENT PAR=  112400
+        60 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+
+ |_GENR LANDVALR = VLDWEL/VDWEL
+
+ |_GRAPH(LANDVALR,YEAR)
+
+ REQUIRED MEMORY IS PAR=      15 CURRENT PAR=  112400
+        60 OBSERVATIONS
+ ...NOTE..SHAZAM WILL NOW MAKE A PLOT FOR YOU
+
+ |_PRINT YEAR VLDWEL QLDWEL PLDWEL
+       YEAR           VLDWEL         QLDWEL         PLDWEL
+    1960.100       16.34923       16.34923       1.000000
+    1961.100       17.85376       21.13849      0.8446090
+    1962.100       19.61330       19.60009       1.000674
+    1963.100       19.74298       16.50294       1.196331
+    1964.100       22.97754       18.25960       1.258381
+    1965.100       24.68508       18.68343       1.321228
+    1966.100       26.79597       19.47942       1.375604
+    1967.100       26.65315       18.58100       1.434430
+    1968.100       28.50404       18.08995       1.575684
+    1969.100       32.17062       18.28518       1.759382
+    1970.100       38.40258       19.13677       2.006744
+    1971.100       44.92222       19.51584       2.301834
+    1972.100       50.97988       19.67011       2.591743
+    1973.100       61.19763       19.84746       3.083398
+    1974.100       80.79059       20.07128       4.025185
+    1975.100       86.23367       20.34651       4.238255
+    1976.100       96.44899       20.38090       4.732322
+    1977.100       104.4109       20.40302       5.117426
+    1978.100       108.6258       20.32635       5.344089
+    1979.100       117.0746       18.05874       6.482988
+    1980.100       142.6683       19.37477       7.363613
+    1981.100       171.4659       19.20388       8.928713
+    1982.100       169.5021       19.04279       8.901118
+    1983.100       172.7017       19.24173       8.975373
+    1984.100       199.5699       19.54582       10.21036
+    1985.100       219.6067       19.05488       11.52496
+    1986.100       216.9779       17.01358       12.75322
+    1987.100       215.5474       17.98558       11.98446
+    1988.100       302.9597       20.41231       14.84201
+    1989.100       410.5000       17.89981       22.93320
+    1990.100       432.8000       19.51076       22.18263
+    1991.100       444.4000       20.09375       22.11633
+    1992.100       466.6000       20.12455       23.18561
+    1993.100       483.0000       20.02573       24.11897
+    1994.100       545.0000       21.66868       25.15151
+    1995.100       565.9000       22.39217       25.27223
+    1996.100       584.9000       22.92165       25.51736
+    1997.100       700.3000       26.21264       26.71612
+    1998.100       748.4000       24.41997       30.64705
+    1999.100       832.7000       25.30304       32.90909
+    2000.100       951.0000       25.41841       37.41382
+    2001.100       1038.800       26.32829       39.45566
+    2002.100       1299.300       24.67339       52.65997
+    2003.100       1592.300       24.38174       65.30706
+    2004.100       1820.700       25.52933       71.31796
+    2005.100       1939.700       27.06472       71.66896
+    2006.100       2183.200       28.22358       77.35376
+    2007.100       2499.600       28.92513       86.41621
+    2008.100       2602.600       27.80619       93.59786
+    2009.100       2414.100       26.08519       92.54677
+    2010.100       3067.100       26.88327       114.0895
+    2011.100       3045.600       27.85291       109.3458
+    2012.100       2901.400       27.34990       106.0845
+    2013.100       3073.300       27.09113       113.4430
+    2014.100       3429.300       26.58310       129.0030
+    2015.100       3945.200       27.07413       145.7185
+    2016.100       4169.600       27.33906       152.5144
+    2017.100       4783.700       27.65700       172.9652
+    2018.100       4833.900       28.51821       169.5022
+    2019.100       4460.100       29.83094       149.5125
+
+
